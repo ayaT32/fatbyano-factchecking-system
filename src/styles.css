@@ -60,7 +60,7 @@
 }
 
 :root {
-  --radius: 0.5rem;
+  --radius: 0.85rem;
   /* background — #ffffff tinted toward the surface #f7f7fb */
   --background: oklch(0.985 0.003 285);
   /* foreground — dark navy #1e1e36 */
@@ -104,7 +104,9 @@
   --chart-4: oklch(0.55 0.22 28);
   --chart-5: oklch(0.6 0.02 285);
   --gradient-gold: linear-gradient(135deg, oklch(0.63 0.19 340), oklch(0.5 0.17 340));
-  --shadow-sheet: 0 1px 0 oklch(0.925 0.01 285), 0 10px 28px -18px oklch(0.27 0.055 285 / 0.35);
+  --shadow-sheet: 0 1px 2px oklch(0.27 0.055 285 / 0.04), 0 8px 24px -12px oklch(0.27 0.055 285 / 0.12);
+  --shadow-sheet-hover: 0 2px 4px oklch(0.27 0.055 285 / 0.05), 0 18px 40px -16px oklch(0.27 0.055 285 / 0.2);
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
   /* sidebar — dark navy #1e1e36 */
   --sidebar: oklch(0.27 0.055 285);
   --sidebar-foreground: oklch(0.975 0.005 285);
@@ -124,7 +126,23 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
+  html { scroll-behavior: smooth; }
+  a, button, input, textarea, select, [role="button"], [role="tab"] {
+    transition: color .25s var(--ease-smooth), background-color .25s var(--ease-smooth),
+      border-color .25s var(--ease-smooth), box-shadow .3s var(--ease-smooth),
+      transform .25s var(--ease-smooth), opacity .25s var(--ease-smooth);
+  }
+  button:not(:disabled):active { transform: scale(0.98); }
+  input:focus-visible, textarea:focus-visible {
+    box-shadow: 0 0 0 4px oklch(0.55 0.185 340 / 0.12);
+  }
+  main { animation: page-in .5s var(--ease-smooth) both; }
+  ::selection { background: oklch(0.55 0.185 340 / 0.18); }
+  * { scrollbar-width: thin; scrollbar-color: oklch(0.85 0.015 285) transparent; }
   h1, h2, h3, h4 {
     font-family: var(--font-display);
     font-weight: 700;
@@ -135,6 +153,18 @@
   background-color: var(--card);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-sheet);
+  border: 1px solid oklch(0.925 0.01 285 / 0.7);
+  transition: box-shadow .35s var(--ease-smooth), transform .35s var(--ease-smooth);
+  &:hover { box-shadow: var(--shadow-sheet-hover); }
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, main { animation: none !important; transition: none !important; }
 }
 
 @utility bg-gold-gradient {
