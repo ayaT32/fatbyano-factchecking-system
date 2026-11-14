@@ -4,7 +4,7 @@ export type Lang = "ar" | "en";
 
 const dict = {
   appName: { ar: "فتبينوا", en: "Fattabyno" },
-  tagline: { ar: "منصة التحقق الداخلية", en: "Internal verification desk" },
+  tagline: { ar: "الحقيقة تستحق التحقق", en: "Facts deserve verification" },
   dashboard: { ar: "لوحة التحكم", en: "Dashboard" },
   analytics: { ar: "التحليلات", en: "Analytics" },
   trends: { ar: "الرائج الآن", en: "Trending" },
@@ -12,6 +12,9 @@ const dict = {
   history: { ar: "سجل الادعاءات", en: "Claims history" },
   reports: { ar: "التقارير", en: "Reports" },
   team: { ar: "الفريق", en: "Team" },
+  teamActivity: { ar: "نشاط الفريق", en: "Team activity" },
+  masterDatabase: { ar: "قاعدة البيانات الرئيسية", en: "Master database" },
+  internalId: { ar: "معرّف داخلي", en: "Internal ID" },
   signOut: { ar: "تسجيل الخروج", en: "Sign out" },
   management: { ar: "الإدارة", en: "Management" },
   staff: { ar: "مدقق", en: "Fact-checker" },
@@ -24,7 +27,10 @@ const dict = {
   staffOnly: { ar: "للإدارة والفريق فقط", en: "For management and staff only" },
   noAccount: { ar: "ليس لديك حساب؟", en: "No account yet?" },
   haveAccount: { ar: "لديك حساب؟", en: "Already have an account?" },
-  checkEmail: { ar: "تحقق من بريدك لتأكيد الحساب.", en: "Check your email to confirm your account." },
+  checkEmail: {
+    ar: "تحقق من بريدك لتأكيد الحساب.",
+    en: "Check your email to confirm your account.",
+  },
   welcome: { ar: "مرحباً", en: "Welcome" },
   totalClaims: { ar: "إجمالي الادعاءات", en: "Total claims" },
   thisWeek: { ar: "هذا الأسبوع", en: "This week" },
@@ -63,7 +69,10 @@ const dict = {
   role: { ar: "الدور", en: "Role" },
   makeAdmin: { ar: "ترقية للإدارة", en: "Make management" },
   makeStaff: { ar: "تحويل لمدقق", en: "Make fact-checker" },
-  aiNote: { ar: "نتيجة الذكاء الاصطناعي إرشادية — راجعها قبل النشر.", en: "AI output is guidance — review before publishing." },
+  aiNote: {
+    ar: "نتيجة الذكاء الاصطناعي إرشادية — راجعها قبل النشر.",
+    en: "AI output is guidance — review before publishing.",
+  },
   analysis: { ar: "التحليل", en: "Analysis" },
   category: { ar: "الفئة", en: "Category" },
   reportCreated: { ar: "تم إنشاء التقرير", en: "Report created" },

@@ -1,19 +1,55 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { BarChart3, FileText, Flame, History, LayoutDashboard, LogOut, ScanSearch, Users, Languages } from "lucide-react";
+import {
+  BarChart3,
+  ChevronDown,
+  FileText,
+  Flame,
+  History,
+  LayoutDashboard,
+  LogOut,
+  ScanSearch,
+  Users,
+  Languages,
+} from "lucide-react";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useI18n } from "@/lib/i18n";
 import { useMe } from "@/lib/session";
+import { employeeId } from "@/lib/auth";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Logo({ light }: { light?: boolean }) {
   const { t } = useI18n();
   return (
     <div className="flex items-center gap-2.5">
-      <div className="grid size-10 place-items-center rounded-lg bg-gold font-display text-xl font-bold text-gold-foreground">ف</div>
+      <div className="grid size-10 place-items-center rounded-lg bg-gold font-display text-xl font-bold text-gold-foreground">
+        ف
+      </div>
       <div className="leading-tight">
-        <p className={light ? "font-display text-base font-semibold text-sidebar-foreground" : "font-display text-base font-semibold text-ink"}>{t("appName")}</p>
-        <p className={light ? "text-[11px] text-sidebar-foreground/60" : "text-[11px] text-muted-foreground"}>{t("tagline")}</p>
+        <p
+          className={
+            light
+              ? "font-display text-base font-semibold text-sidebar-foreground"
+              : "font-display text-base font-semibold text-ink"
+          }
+        >
+          {t("appName")}
+        </p>
+        <p
+          className={
+            light ? "text-[11px] text-sidebar-foreground/60" : "text-[11px] text-muted-foreground"
+          }
+        >
+          {t("tagline")}
+        </p>
       </div>
     </div>
   );
@@ -44,16 +80,12 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const items = [
     { to: "/dashboard", label: t("dashboard"), icon: LayoutDashboard },
+    ...(me?.isAdmin ? [{ to: "/team", label: t("teamActivity"), icon: Users }] : []),
     { to: "/trends", label: t("trends"), icon: Flame },
     { to: "/check", label: t("check"), icon: ScanSearch },
-    { to: "/history", label: t("history"), icon: History },
+    { to: "/history", label: me?.isAdmin ? t("masterDatabase") : t("history"), icon: History },
     { to: "/reports", label: t("reports"), icon: FileText },
-    ...(me?.isAdmin
-      ? [
-          { to: "/analytics", label: t("analytics"), icon: BarChart3 },
-          { to: "/team", label: t("team"), icon: Users },
-        ]
-      : []),
+    ...(me?.isAdmin ? [{ to: "/analytics", label: t("analytics"), icon: BarChart3 }] : []),
   ] as const;
 
   async function signOut() {
@@ -73,7 +105,9 @@ export function AppShell({ children }: { children: ReactNode }) {
               key={it.to}
               to={it.to}
               className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-              activeProps={{ className: "!bg-sidebar-primary !text-sidebar-primary-foreground font-medium" }}
+              activeProps={{
+                className: "!bg-sidebar-primary !text-sidebar-primary-foreground font-medium",
+              }}
             >
               <it.icon className="size-4" />
               {it.label}
@@ -82,16 +116,39 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
         <div className="space-y-2 border-t border-sidebar-border pt-4">
           {me && (
-            <div className="px-3 pb-2">
-              <p className="truncate text-sm font-medium text-sidebar-foreground">{me.profile?.full_name || me.user.email}</p>
-              <p className="text-xs text-sidebar-primary">{me.isAdmin ? t("management") : t("staff")}</p>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="flex w-full items-center gap-3 rounded-xl px-2 py-2 text-start hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring">
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-primary font-bold text-white">
+                    {(me.profile?.full_name || me.user.email || "?")
+                      .slice(0, 1)
+                      .toLocaleUpperCase()}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-medium text-sidebar-foreground">
+                      {me.profile?.full_name || me.user.email}
+                    </span>
+                    <span className="block text-xs text-sidebar-foreground/60">
+                      {me.isAdmin ? t("management") : t("staff")}
+                    </span>
+                  </span>
+                  <ChevronDown className="size-4 text-sidebar-foreground/60" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" side="top" className="w-64">
+                <DropdownMenuLabel>{me.profile?.full_name || me.user.email}</DropdownMenuLabel>
+                <DropdownMenuLabel className="pt-0 text-xs font-normal text-muted-foreground">
+                  {t("internalId")}: {employeeId(me.user.id)}
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onSelect={() => void signOut()}>
+                  <LogOut />
+                  {t("signOut")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           )}
           <LangSwitch light />
-          <button onClick={signOut} className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-sidebar-foreground/80 hover:bg-sidebar-accent">
-            <LogOut className="size-4" />
-            {t("signOut")}
-          </button>
         </div>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
@@ -100,17 +157,30 @@ export function AppShell({ children }: { children: ReactNode }) {
           <Logo />
           <div className="flex gap-2">
             <LangSwitch />
-            <button onClick={signOut} aria-label={t("signOut")} className="rounded-lg border border-border p-2"><LogOut className="size-4" /></button>
+            <button
+              onClick={signOut}
+              aria-label={t("signOut")}
+              className="rounded-lg border border-border p-2"
+            >
+              <LogOut className="size-4" />
+            </button>
           </div>
         </header>
         <nav className="no-print flex gap-1 overflow-x-auto border-b border-border bg-card px-3 py-2 md:hidden">
           {items.map((it) => (
-            <Link key={it.to} to={it.to} className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-muted-foreground" activeProps={{ className: "!bg-primary !text-primary-foreground" }}>
+            <Link
+              key={it.to}
+              to={it.to}
+              className="whitespace-nowrap rounded-md px-3 py-1.5 text-sm text-muted-foreground"
+              activeProps={{ className: "!bg-primary !text-primary-foreground" }}
+            >
               {it.label}
             </Link>
           ))}
         </nav>
-        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-10 md:py-10">{children}</main>
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 md:px-10 md:py-10">
+          {children}
+        </main>
       </div>
     </div>
   );

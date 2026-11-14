@@ -4,11 +4,11 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Fattabyno design system — modelled on fatabyyano.net: deep green ink, signal gold, clean white. */
+/* Fatabyyano brand palette: dark navy, magenta, and cool gray-blue surfaces. */
 
 @theme inline {
-  --font-display: "Noto Naskh Arabic", "IBM Plex Sans Arabic", system-ui, sans-serif;
-  --font-sans: "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-display: "Thmanyah", Tahoma, Arial, sans-serif;
+  --font-sans: "Thmanyah", Tahoma, Arial, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -61,54 +61,51 @@
 
 :root {
   --radius: 0.5rem;
-  --background: oklch(0.975 0.004 95);
-  --foreground: oklch(0.25 0.035 178);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.035 178);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.035 178);
-  /* deep green — #003229 */
-  --primary: oklch(0.29 0.05 178);
-  --primary-foreground: oklch(1 0 0);
-  --primary-soft: oklch(0.95 0.05 85);
-  /* signal gold — #eab332 */
-  --gold: oklch(0.79 0.15 80);
-  --gold-foreground: oklch(0.22 0.04 178);
-  --gold-ink: oklch(0.52 0.11 75);
-  --secondary: oklch(0.955 0.006 95);
-  --secondary-foreground: oklch(0.29 0.05 178);
-  --muted: oklch(0.955 0.005 95);
-  --muted-foreground: oklch(0.48 0.02 178);
-  --accent: oklch(0.95 0.05 85);
-  --accent-foreground: oklch(0.29 0.05 178);
-  --destructive: oklch(0.56 0.22 28);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0.008 95);
-  --input: oklch(0.88 0.01 95);
-  --ring: oklch(0.79 0.15 80);
-  --ink: oklch(0.22 0.04 178);
-  --ink-foreground: oklch(0.97 0.006 95);
+  --background: #ffffff;
+  --foreground: #1e1e36;
+  --card: #f7f7fb;
+  --card-foreground: #1e1e36;
+  --popover: #ffffff;
+  --popover-foreground: #1e1e36;
+  --primary: #c54699;
+  --primary-foreground: #ffffff;
+  --primary-soft: #f8eaf3;
+  --gold: #c54699;
+  --gold-foreground: #ffffff;
+  --gold-ink: #a52e7c;
+  --secondary: #f0eff5;
+  --secondary-foreground: #1e1e36;
+  --muted: #f0eff5;
+  --muted-foreground: #6e6e82;
+  --accent: #f8eaf3;
+  --accent-foreground: #1e1e36;
+  --destructive: #c93c4d;
+  --destructive-foreground: #ffffff;
+  --border: #e5e4ed;
+  --input: #d7d6e1;
+  --ring: #c54699;
+  --ink: #1e1e36;
+  --ink-foreground: #f7f7fb;
   --verdict-true: oklch(0.55 0.13 155);
   --verdict-false: oklch(0.55 0.22 28);
   --verdict-misleading: oklch(0.62 0.19 42);
-  --verdict-partly: oklch(0.79 0.15 80);
-  --verdict-unverifiable: oklch(0.6 0.015 178);
-  --chart-1: oklch(0.79 0.15 80);
-  --chart-2: oklch(0.29 0.05 178);
+  --verdict-partly: #c54699;
+  --verdict-unverifiable: #6e6e82;
+  --chart-1: #c54699;
+  --chart-2: #1e1e36;
   --chart-3: oklch(0.55 0.13 155);
   --chart-4: oklch(0.55 0.22 28);
-  --chart-5: oklch(0.6 0.015 178);
-  --gradient-gold: linear-gradient(135deg, oklch(0.83 0.14 85), oklch(0.74 0.15 75));
-  --shadow-sheet: 0 1px 0 oklch(0.9 0.008 95), 0 10px 28px -18px oklch(0.29 0.05 178 / 0.35);
-  /* sidebar — #01211c */
-  --sidebar: oklch(0.22 0.04 178);
-  --sidebar-foreground: oklch(0.95 0.008 95);
-  --sidebar-primary: oklch(0.79 0.15 80);
-  --sidebar-primary-foreground: oklch(0.22 0.04 178);
-  --sidebar-accent: oklch(0.29 0.045 178);
-  --sidebar-accent-foreground: oklch(0.98 0.006 95);
-  --sidebar-border: oklch(0.32 0.04 178);
-  --sidebar-ring: oklch(0.79 0.15 80);
+  --chart-5: #6e6e82;
+  --gradient-gold: linear-gradient(135deg, #c54699, #a52e7c);
+  --shadow-sheet: 0 1px 0 #e5e4ed, 0 14px 36px -24px rgb(30 30 54 / 0.35);
+  --sidebar: #1e1e36;
+  --sidebar-foreground: #f7f7fb;
+  --sidebar-primary: #c54699;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #30304a;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #393950;
+  --sidebar-ring: #c54699;
 }
 
 @layer base {
@@ -119,6 +116,9 @@
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+  }
+  button, input, textarea, select {
+    font: inherit;
   }
   h1, h2, h3, h4 {
     font-family: var(--font-display);

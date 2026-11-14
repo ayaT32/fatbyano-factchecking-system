@@ -22,3 +22,55 @@ cd <repository-name>
 npm i
 npm run dev
 ```
+
+## Deploy to Render
+
+This app uses Supabase for authentication, claims, reports, and image storage. The
+`render.yaml` Blueprint builds the TanStack Start app as a Node server; it does
+not create or migrate a database. In Render, create a new Blueprint from this
+repository and provide the requested environment variables from your Supabase
+project and Lovable AI settings. `FIRECRAWL_API_KEY` is used by trend search.
+
+### Connect the DEFAME fact-checking backend
+
+The AI fact-check server function sends checks to the FastAPI service in
+[`Eilaf649/fatabyyano-factchecker`](https://github.com/Eilaf649/fatabyyano-factchecker).
+Deploy that service separately, then set `DEFAME_API_URL` to its HTTPS base URL
+and `DEFAME_API_KEY` to the matching backend API key in the Render environment.
+For local development, set the same variables in the ignored `.env` file.
+These are server-only variables; do not prefix them with `VITE_` or commit their
+values. The app submits jobs to `/verify` and polls `/results/{job_id}` from the
+server, so the browser never receives the backend API key.
+
+The DEFAME API keeps jobs in memory. A backend restart can therefore interrupt
+an active check or make its results unavailable. Use a continuously running
+backend instance for production fact-checking.
+
+Do not commit `.env` files or paste service-role/API keys into source control.
+The free Render web service may spin down after inactivity, so its first request
+after a quiet period can take longer.
+
+### Supabase setup for private drafts and staff roles
+
+Before deploying the updated app, run
+[`supabase/migrations/20261113140000_private_drafts_and_staff_roles.sql`](./supabase/migrations/20261113140000_private_drafts_and_staff_roles.sql)
+in the Supabase SQL Editor. It keeps existing claims published, makes new checks
+private by default, limits management access to published claims (and their
+reports and attachments), and assigns new self-registered accounts the
+factchecker role. Existing administrator roles are preserved. Also enable email
+confirmation in Supabase Authentication settings so new accounts must verify
+their email before entering the workspace.
+
+If the project has no administrator yet, register and verify the trusted admin
+account first, then promote that account once in the SQL Editor (replace the
+email with the account's email):
+
+```sql
+update public.user_roles
+set role = 'admin'
+where user_id = (select id from auth.users where email = 'admin@example.com')
+  and role = 'staff';
+```
+
+After an administrator exists, role promotions can be managed from Team
+Activity in the app.

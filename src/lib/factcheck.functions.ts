@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { runFactCheck } from "./ai/factcheck.server";
+import { runDefameFactCheck } from "./ai/defame.server";
 
 export const checkClaim = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -17,7 +17,7 @@ export const checkClaim = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    const result = await runFactCheck(data);
+    const result = await runDefameFactCheck(data);
     const { data: row, error } = await context.supabase
       .from("claims")
       .insert({
