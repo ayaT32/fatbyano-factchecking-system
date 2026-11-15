@@ -17,6 +17,8 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Fatabyyano — Staff Fact-Checking Workspace" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         name: "description",
         content:

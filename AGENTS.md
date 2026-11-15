@@ -12,3 +12,6 @@
 - Keep verification input, claims archive/detail, reports, and analytics as separate authenticated TanStack routes so each staff workflow has a shareable URL.
 - Reuse the existing checkClaim server function for AI checks and the user-scoped client for claims, report, and attachment reads/writes so existing access policies remain authoritative.
 - Keep client-safe analysis parsing, exports, and aggregates in src/lib/desk.ts and shared result/report controls in components so screens interpret saved research consistently.
+- Keep remote agent tools read-only in src/lib/mcp, authenticated by the managed OAuth issuer with client-claim verification and caller-scoped database access; this preserves existing staff access policies.
+- Preserve canonical local OAuth return paths through all auth methods; this lets assistant consent survive sign-in and email verification without external redirects.
+- Register browser archive tools in their owning screen with shared visible-record actions and fail-open static telemetry; this preserves filters and normal navigation while removing tools on unmount.

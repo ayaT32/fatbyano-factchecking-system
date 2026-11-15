@@ -1,4 +1,6 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useWebMCP } from "use-webmcp-tool";
+import { runWebMCPTool } from "@/lib/webmcp-telemetry";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Download, ScanSearch, ArrowUpRight, Printer, Image as ImageIcon } from "lucide-react";
@@ -29,6 +31,7 @@ function HistoryPage() {
   const { t, lang } = useI18n();
   const c = useCopy();
   const q = useClaims();
+  const navigate = useNavigate();
   const { data: me } = useMe();
   const [search, setSearch] = useState("");
   const [verdict, setVerdict] = useState("all");
@@ -59,6 +62,27 @@ function HistoryPage() {
     { value: "verified", label: c("تم التحقق", "Verified") },
     { value: "debunked", label: c("تم دحضه", "Debunked") },
   ] as const;
+  function openVisibleClaim(id: string) {
+    if (typeof id !== "string" || !rows.some(row => row.id === id)) throw new Error("Claim is not in the current view.");
+    return navigate({ to: "/history/$id", params: { id } });
+  }
+  useWebMCP({
+    name: "read_visible_claims",
+    description: "Read the claims currently shown in the archive, respecting all active filters.",
+    annotations: { readOnlyHint: true, untrustedContentHint: true },
+    execute: () => runWebMCPTool("read_visible_claims", () => {
+      if (q.isLoading) return "Claims are still loading.";
+      if (q.error) throw new Error("Claims could not be loaded.");
+      return rows.length ? rows.slice(0, 40).map(row => `${row.id}: ${row.claim_text.slice(0, 240)} — ${row.verdict ?? "pending"}`).join("\n") + (rows.length > 40 ? `\nShowing first 40 of ${rows.length} visible claims.` : "") : "No matching claims.";
+    }),
+  });
+  useWebMCP<{ id: string }>({
+    name: "open_claim_research",
+    description: "Open research for a claim currently shown in the archive, using its visible ID.",
+    enabled: !q.isLoading && !q.error,
+    inputSchema: { type: "object", properties: { id: { type: "string", description: "Claim ID from read_visible_claims." } }, required: ["id"], additionalProperties: false },
+    execute: ({ id }) => runWebMCPTool("open_claim_research", async () => { await openVisibleClaim(id); return "Claim research opened."; }),
+  });
   const imagePaths = [
     ...new Set(rows.slice(0, 40).flatMap((claim) => (claim.image_path ? [claim.image_path] : []))),
   ];
@@ -225,6 +249,7 @@ function HistoryPage() {
                         to="/history/$id"
                         params={{ id: r.id }}
                         className="flex items-center gap-3 hover:text-primary"
+                        onClick={(event) => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); void openVisibleClaim(r.id); } }}
                       >
                         <span className="grid size-12 shrink-0 place-items-center overflow-hidden rounded-lg bg-muted">
                           {r.image_path && thumbnails.data?.[r.image_path] ? (
@@ -251,7 +276,7 @@ function HistoryPage() {
                     </td>
                     <td className="px-3">
                       <Button asChild variant="ghost" size="icon" title={t("viewClaim")}>
-                        <Link to="/history/$id" params={{ id: r.id }} aria-label={t("viewClaim")}>
+                        <Link to="/history/$id" params={{ id: r.id }} aria-label={t("viewClaim")} onClick={(event) => { if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) { event.preventDefault(); void openVisibleClaim(r.id); } }}>
                           <ArrowUpRight />
                         </Link>
                       </Button>

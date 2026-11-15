@@ -10,15 +10,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getPasswordRequirements, isStrongPassword, type PasswordRequirement } from "@/lib/auth";
+import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  validateSearch: (search: Record<string, unknown>): { mode?: "in" | "up" } => ({
+  validateSearch: (search: Record<string, unknown>): { mode?: "in" | "up"; next?: string } => ({
     mode: search["mode"] === "up" ? "up" : "in",
+    next: oauthReturnPath(search["next"]),
   }),
   head: () => ({
     meta: [
       { title: "Sign in — Fattabyno" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       {
         name: "description",
         content: "Staff and management sign-in for Fattabyno fact-checking desk.",
@@ -30,9 +34,10 @@ export const Route = createFileRoute("/auth")({
       },
     ],
   }),
-  beforeLoad: async () => {
+  beforeLoad: async ({ search }) => {
     const { data } = await supabase.auth.getUser();
     if (data.user) {
+      if (search.next && search.next !== "/" && !search.next.startsWith("/auth")) throw redirect({ href: search.next });
       const { data: roles, error } = await supabase
         .from("user_roles")
         .select("role")
@@ -48,6 +53,8 @@ function AuthPage() {
   const { t, lang } = useI18n();
   const navigate = useNavigate();
   const search = Route.useSearch();
+  const next = search.next ?? "/";
+  const returnUrl = () => new URL(next === "/" ? "/auth" : next, window.location.origin).href;
   const [mode, setMode] = useState<"in" | "up">(search.mode ?? "in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -71,6 +78,7 @@ function AuthPage() {
       if (mode === "in") {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
+        if (next !== "/") { window.location.assign(next); return; }
         const { data: roles, error: roleError } = await supabase
           .from("user_roles")
           .select("role")
@@ -81,11 +89,12 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/auth`, data: { full_name: name } },
+          options: { emailRedirectTo: returnUrl(), data: { full_name: name } },
         });
         if (error) throw error;
         if (data.session && data.user?.email_confirmed_at) {
-          navigate({ to: "/dashboard" });
+          if (next !== "/") window.location.assign(next);
+          else navigate({ to: "/dashboard" });
         } else {
           if (data.session) await supabase.auth.signOut();
           setPendingVerification(true);
@@ -102,7 +111,7 @@ function AuthPage() {
     if (resendSeconds > 0 || busy) return;
     setBusy(true);
     try {
-      const { error } = await supabase.auth.resend({ type: "signup", email });
+      const { error } = await supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: returnUrl() } });
       if (error) throw error;
       setResendSeconds(60);
       toast.success(
@@ -117,10 +126,13 @@ function AuthPage() {
 
   async function google() {
     const r = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: `${window.location.origin}/dashboard`,
+      redirect_uri: new URL(`/auth?next=${encodeURIComponent(next)}`, window.location.origin).href,
     });
     if (r.error) toast.error(String(r.error.message ?? r.error));
-    else if (!r.redirected) navigate({ to: "/dashboard" });
+    else if (!r.redirected) {
+      if (next !== "/") window.location.assign(next);
+      else navigate({ to: "/dashboard" });
+    }
   }
 
   const ruleLabels: Record<PasswordRequirement, string> = {

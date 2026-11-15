@@ -20,6 +20,8 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
       { title: "Dashboard — Fattabyno" },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
       { name: "description", content: "Overview of claims and reports at Fattabyno." },
       { property: "og:title", content: "Dashboard — Fattabyno" },
       { property: "og:description", content: "Overview of claims and reports at Fattabyno." },

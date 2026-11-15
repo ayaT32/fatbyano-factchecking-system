@@ -15,6 +15,13 @@
       "when": 1794549898655,
       "tag": "0001_restrict_profiles_select",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794711190795,
+      "tag": "0002_restore_claim_publication_field",
+      "breakpoints": true
     }
   ]
 }
