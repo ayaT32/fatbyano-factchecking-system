@@ -22,6 +22,13 @@
       "when": 1794711190795,
       "tag": "0002_restore_claim_publication_field",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794990307487,
+      "tag": "0003_private_investigation_chats",
+      "breakpoints": true
     }
   ]
 }
