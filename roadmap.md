@@ -1,4 +1,5 @@
 - [ ] Complete AI fact-check input, image attachment, and saved result flow.
+- [ ] Redesign the AI checker as a chat workspace with optional manipulation-analysis and geolocation tools; waiting for conversation shape and history choices.
 - [x] Add OAuth-protected MCP research reads, consent return handling, and browser-local archive tools; verify manifest, anonymous rejection, signed-in archive, and tests.
 - [ ] Verify external assistant OAuth approval and denial after publishing; blocked by unpublished app.
 - [ ] Complete searchable claims history and claim detail.
