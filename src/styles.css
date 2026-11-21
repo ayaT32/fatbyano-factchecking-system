@@ -221,3 +221,11 @@
     background: white;
   }
 }
+
+.investigation-workspace {
+  height: calc(100dvh - 100px);
+  max-height: 1200px;
+}
+@media (max-width: 767px) {
+  .investigation-workspace { height: calc(100dvh - 180px); min-height: 580px; }
+}

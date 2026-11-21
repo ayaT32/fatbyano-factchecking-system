@@ -15,3 +15,5 @@
 - Keep remote agent tools read-only in src/lib/mcp, authenticated by the managed OAuth issuer with client-claim verification and caller-scoped database access; this preserves existing staff access policies.
 - Preserve canonical local OAuth return paths through all auth methods; this lets assistant consent survive sign-in and email verification without external redirects.
 - Register browser archive tools in their owning screen with shared visible-record actions and fail-open static telemetry; this preserves filters and normal navigation while removing tools on unmount.
+- Keep investigation chats owner-only with route-derived IDs and persisted AI SDK messages; use the authenticated streaming endpoint for research and retain checkClaim for explicit saved verification.
+- Image manipulation and geolocation chat tools provide qualitative visual assessments, not forensic certification or confirmed coordinates; only enabled tools may execute on uploaded imagery.

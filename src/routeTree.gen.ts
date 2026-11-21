@@ -20,7 +20,10 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTrendsRouteImport } from './routes/_authenticated/trends'
+import { Route as ApiInvestigationChatRouteImport } from './routes/api/investigation-chat'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
+import { Route as AuthenticatedCheckIndexRouteImport } from './routes/_authenticated/check.index'
+import { Route as AuthenticatedCheckIdRouteImport } from './routes/_authenticated/check.$id'
 import { Route as AuthenticatedHistoryIndexRouteImport } from './routes/_authenticated/history.index'
 import { Route as AuthenticatedHistoryIdRouteImport } from './routes/_authenticated/history.$id'
 
@@ -79,10 +82,25 @@ const AuthenticatedTrendsRoute = AuthenticatedTrendsRouteImport.update({
   path: '/trends',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiInvestigationChatRoute = ApiInvestigationChatRouteImport.update({
+  id: '/api/investigation-chat',
+  path: '/api/investigation-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCheckIndexRoute = AuthenticatedCheckIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthenticatedCheckRoute,
+} as any)
+const AuthenticatedCheckIdRoute = AuthenticatedCheckIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AuthenticatedCheckRoute,
 } as any)
 const AuthenticatedHistoryIndexRoute =
   AuthenticatedHistoryIndexRouteImport.update({
@@ -102,13 +120,16 @@ export interface FileRoutesByFullPath {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
-  '/check': typeof AuthenticatedCheckRoute
+  '/check': typeof AuthenticatedCheckRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/trends': typeof AuthenticatedTrendsRoute
+  '/api/investigation-chat': typeof ApiInvestigationChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/check/$id': typeof AuthenticatedCheckIdRoute
   '/history/$id': typeof AuthenticatedHistoryIdRoute
+  '/check/': typeof AuthenticatedCheckIndexRoute
   '/history/': typeof AuthenticatedHistoryIndexRoute
 }
 export interface FileRoutesByTo {
@@ -117,13 +138,15 @@ export interface FileRoutesByTo {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
-  '/check': typeof AuthenticatedCheckRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/trends': typeof AuthenticatedTrendsRoute
+  '/api/investigation-chat': typeof ApiInvestigationChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/check/$id': typeof AuthenticatedCheckIdRoute
   '/history/$id': typeof AuthenticatedHistoryIdRoute
+  '/check': typeof AuthenticatedCheckIndexRoute
   '/history': typeof AuthenticatedHistoryIndexRoute
 }
 export interface FileRoutesById {
@@ -134,13 +157,16 @@ export interface FileRoutesById {
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
-  '/_authenticated/check': typeof AuthenticatedCheckRoute
+  '/_authenticated/check': typeof AuthenticatedCheckRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/trends': typeof AuthenticatedTrendsRoute
+  '/api/investigation-chat': typeof ApiInvestigationChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/_authenticated/check/$id': typeof AuthenticatedCheckIdRoute
   '/_authenticated/history/$id': typeof AuthenticatedHistoryIdRoute
+  '/_authenticated/check/': typeof AuthenticatedCheckIndexRoute
   '/_authenticated/history/': typeof AuthenticatedHistoryIndexRoute
 }
 export interface FileRouteTypes {
@@ -156,8 +182,11 @@ export interface FileRouteTypes {
     | '/reports'
     | '/team'
     | '/trends'
+    | '/api/investigation-chat'
     | '/.lovable/oauth/consent'
+    | '/check/$id'
     | '/history/$id'
+    | '/check/'
     | '/history/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -166,13 +195,15 @@ export interface FileRouteTypes {
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/analytics'
-    | '/check'
     | '/dashboard'
     | '/reports'
     | '/team'
     | '/trends'
+    | '/api/investigation-chat'
     | '/.lovable/oauth/consent'
+    | '/check/$id'
     | '/history/$id'
+    | '/check'
     | '/history'
   id:
     | '__root__'
@@ -187,8 +218,11 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/team'
     | '/_authenticated/trends'
+    | '/api/investigation-chat'
     | '/.lovable/oauth/consent'
+    | '/_authenticated/check/$id'
     | '/_authenticated/history/$id'
+    | '/_authenticated/check/'
     | '/_authenticated/history/'
   fileRoutesById: FileRoutesById
 }
@@ -198,6 +232,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   McpRoute: typeof McpRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ApiInvestigationChatRoute: typeof ApiInvestigationChatRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
@@ -280,12 +315,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTrendsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/investigation-chat': {
+      id: '/api/investigation-chat'
+      path: '/api/investigation-chat'
+      fullPath: '/api/investigation-chat'
+      preLoaderRoute: typeof ApiInvestigationChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
       fullPath: '/.lovable/oauth/consent'
       preLoaderRoute: typeof DotlovableOauthConsentRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/check/': {
+      id: '/_authenticated/check/'
+      path: '/'
+      fullPath: '/check/'
+      preLoaderRoute: typeof AuthenticatedCheckIndexRouteImport
+      parentRoute: typeof AuthenticatedCheckRoute
+    }
+    '/_authenticated/check/$id': {
+      id: '/_authenticated/check/$id'
+      path: '/$id'
+      fullPath: '/check/$id'
+      preLoaderRoute: typeof AuthenticatedCheckIdRouteImport
+      parentRoute: typeof AuthenticatedCheckRoute
     }
     '/_authenticated/history/': {
       id: '/_authenticated/history/'
@@ -304,9 +360,22 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedCheckRouteChildren {
+  AuthenticatedCheckIdRoute: typeof AuthenticatedCheckIdRoute
+  AuthenticatedCheckIndexRoute: typeof AuthenticatedCheckIndexRoute
+}
+
+const AuthenticatedCheckRouteChildren: AuthenticatedCheckRouteChildren = {
+  AuthenticatedCheckIdRoute: AuthenticatedCheckIdRoute,
+  AuthenticatedCheckIndexRoute: AuthenticatedCheckIndexRoute,
+}
+
+const AuthenticatedCheckRouteWithChildren =
+  AuthenticatedCheckRoute._addFileChildren(AuthenticatedCheckRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
-  AuthenticatedCheckRoute: typeof AuthenticatedCheckRoute
+  AuthenticatedCheckRoute: typeof AuthenticatedCheckRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
@@ -317,7 +386,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
-  AuthenticatedCheckRoute: AuthenticatedCheckRoute,
+  AuthenticatedCheckRoute: AuthenticatedCheckRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
@@ -336,6 +405,7 @@ const rootRouteChildren: RootRouteChildren = {
   McpRoute: McpRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiInvestigationChatRoute: ApiInvestigationChatRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport
