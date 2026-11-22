@@ -16,4 +16,6 @@ export const Route = createFileRoute("/_authenticated/check")({
   component: CheckPage,
 });
 
-function CheckPage() { return <Outlet />; }
+function CheckPage() {
+  return <Outlet />;
+}

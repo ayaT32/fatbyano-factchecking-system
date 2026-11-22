@@ -1,5 +1,5 @@
 - [ ] Complete AI fact-check input, image attachment, and saved result flow.
-- [ ] Redesign the AI checker with separate account-saved investigation chats, streaming replies, optional manipulation-analysis and geolocation tools, and retained claim verification; verify two chats and reload.
+- [x] Redesign the AI checker with separate account-saved investigation chats, streaming replies, optional manipulation-analysis and geolocation tools, and retained claim verification; verified real replies, two chats, reload, tools, and smaller screens.
 - [x] Add OAuth-protected MCP research reads, consent return handling, and browser-local archive tools; verify manifest, anonymous rejection, signed-in archive, and tests.
 - [ ] Verify external assistant OAuth approval and denial after publishing; blocked by unpublished app.
 - [ ] Complete searchable claims history and claim detail.
