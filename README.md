@@ -37,10 +37,17 @@ The AI fact-check server function sends checks to the FastAPI service in
 [`Eilaf649/fatabyyano-factchecker`](https://github.com/Eilaf649/fatabyyano-factchecker).
 Deploy that service separately, then set `DEFAME_API_URL` to its HTTPS base URL
 and `DEFAME_API_KEY` to the matching backend API key in the Render environment.
-For local development, set the same variables in the ignored `.env` file.
+For local development, set the same variables in an ignored `.env` or
+`.env.local` file.
 These are server-only variables; do not prefix them with `VITE_` or commit their
 values. The app submits jobs to `/verify` and polls `/results/{job_id}` from the
 server, so the browser never receives the backend API key.
+
+The authenticated Geospatial tools page sends image analysis to
+`POST /geospatial/verify` and address lookups to `POST /geospatial/geocode`,
+also from the server with the same API key. For a local backend listening on
+port 3003, set `DEFAME_API_URL=http://localhost:3003` and the matching
+`DEFAME_API_KEY` in `.env` or `.env.local`.
 
 The DEFAME API keeps jobs in memory. A backend restart can therefore interrupt
 an active check or make its results unavailable. Use a continuously running

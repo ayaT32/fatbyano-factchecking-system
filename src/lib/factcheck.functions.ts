@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { runDefameFactCheck } from "./ai/defame.server";
+import { geocodeAddress, runDefameFactCheck, verifyGeospatialImage } from "./ai/defame.server";
 
 export const checkClaim = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -37,3 +37,13 @@ export const checkClaim = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { id: row.id as string, result };
   });
+
+export const verifyImageLocation = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ imageBase64: z.string().min(1).max(14_000_000) }).parse(d))
+  .handler(async ({ data }) => verifyGeospatialImage(data.imageBase64));
+
+export const lookupAddress = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ address: z.string().trim().min(1).max(1000) }).parse(d))
+  .handler(async ({ data }) => geocodeAddress(data.address));

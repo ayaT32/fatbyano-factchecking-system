@@ -2,7 +2,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   mapDefameVerdict,
   normalizeDefameResult,
+  geocodeAddress,
   runDefameFactCheck,
+  verifyGeospatialImage,
 } from "@/lib/ai/defame.server";
 
 afterEach(() => {
@@ -101,5 +103,30 @@ describe("DEFAME response mapping", () => {
       ],
     });
     expect(fetchMock.mock.calls[1]?.[0]).toBe("https://factcheck.example/results/job-1");
+  });
+
+  it("uses the geospatial endpoints with the server-side API key", async () => {
+    vi.stubEnv("DEFAME_API_URL", "http://localhost:3003");
+    vi.stubEnv("DEFAME_API_KEY", "test-api-key");
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ location: "test" })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ coordinates: [1, 2] })));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await verifyGeospatialImage("base64-image");
+    await geocodeAddress("Test address");
+
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual([
+      "http://localhost:3003/geospatial/verify",
+      "http://localhost:3003/geospatial/geocode",
+    ]);
+    expect(new Headers(fetchMock.mock.calls[0]?.[1]?.headers).get("api-key")).toBe("test-api-key");
+    expect(JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body))).toEqual({
+      image_base64: "base64-image",
+    });
+    expect(JSON.parse(String(fetchMock.mock.calls[1]?.[1]?.body))).toEqual({
+      address: "Test address",
+    });
   });
 });

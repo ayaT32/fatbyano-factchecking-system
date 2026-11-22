@@ -233,3 +233,31 @@ export async function runDefameFactCheck(input: {
     "DEFAME did not finish within 10 minutes. Check the backend service and try again.",
   );
 }
+
+export async function verifyGeospatialImage(imageBase64: string) {
+  const { baseUrl, apiKey } = getConfig();
+  const response = await fetch(`${baseUrl}/geospatial/verify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": apiKey,
+    },
+    body: JSON.stringify({ image_base64: imageBase64 }),
+    signal: AbortSignal.timeout(30_000),
+  });
+  return readApiJson(response, z.json(), "geospatial verification");
+}
+
+export async function geocodeAddress(address: string) {
+  const { baseUrl, apiKey } = getConfig();
+  const response = await fetch(`${baseUrl}/geospatial/geocode`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": apiKey,
+    },
+    body: JSON.stringify({ address }),
+    signal: AbortSignal.timeout(30_000),
+  });
+  return readApiJson(response, z.json(), "geocoding");
+}

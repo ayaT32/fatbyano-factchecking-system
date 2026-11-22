@@ -9,6 +9,7 @@ const dict = {
   analytics: { ar: "التحليلات", en: "Analytics" },
   trends: { ar: "الرائج الآن", en: "Trending" },
   check: { ar: "فحص بالذكاء الاصطناعي", en: "AI fact-check" },
+  geospatial: { ar: "التحقق الجغرافي", en: "Geospatial tools" },
   history: { ar: "سجل الادعاءات", en: "Claims history" },
   reports: { ar: "التقارير", en: "Reports" },
   team: { ar: "الفريق", en: "Team" },

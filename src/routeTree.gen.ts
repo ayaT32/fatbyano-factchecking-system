@@ -17,6 +17,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedCheckRouteImport } from './routes/_authenticated/check'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedGeospatialRouteImport } from './routes/_authenticated/geospatial'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTrendsRouteImport } from './routes/_authenticated/trends'
@@ -65,6 +66,11 @@ const AuthenticatedCheckRoute = AuthenticatedCheckRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGeospatialRoute = AuthenticatedGeospatialRouteImport.update({
+  id: '/geospatial',
+  path: '/geospatial',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
@@ -122,6 +128,7 @@ export interface FileRoutesByFullPath {
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/check': typeof AuthenticatedCheckRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/geospatial': typeof AuthenticatedGeospatialRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/trends': typeof AuthenticatedTrendsRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/geospatial': typeof AuthenticatedGeospatialRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/trends': typeof AuthenticatedTrendsRoute
@@ -159,6 +167,7 @@ export interface FileRoutesById {
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/check': typeof AuthenticatedCheckRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/geospatial': typeof AuthenticatedGeospatialRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/trends': typeof AuthenticatedTrendsRoute
@@ -179,6 +188,7 @@ export interface FileRouteTypes {
     | '/analytics'
     | '/check'
     | '/dashboard'
+    | '/geospatial'
     | '/reports'
     | '/team'
     | '/trends'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/analytics'
     | '/dashboard'
+    | '/geospatial'
     | '/reports'
     | '/team'
     | '/trends'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/_authenticated/analytics'
     | '/_authenticated/check'
     | '/_authenticated/dashboard'
+    | '/_authenticated/geospatial'
     | '/_authenticated/reports'
     | '/_authenticated/team'
     | '/_authenticated/trends'
@@ -292,6 +304,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/geospatial': {
+      id: '/_authenticated/geospatial'
+      path: '/geospatial'
+      fullPath: '/geospatial'
+      preLoaderRoute: typeof AuthenticatedGeospatialRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reports': {
@@ -377,6 +396,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCheckRoute: typeof AuthenticatedCheckRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedGeospatialRoute: typeof AuthenticatedGeospatialRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTrendsRoute: typeof AuthenticatedTrendsRoute
@@ -388,6 +408,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAnalyticsRoute: AuthenticatedAnalyticsRoute,
   AuthenticatedCheckRoute: AuthenticatedCheckRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedGeospatialRoute: AuthenticatedGeospatialRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTrendsRoute: AuthenticatedTrendsRoute,
