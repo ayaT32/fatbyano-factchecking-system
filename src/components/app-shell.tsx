@@ -8,7 +8,6 @@ import {
   History,
   LayoutDashboard,
   LogOut,
-  MapPin,
   ScanSearch,
   Users,
   Languages,
@@ -30,20 +29,17 @@ import {
 export function Logo({ light }: { light?: boolean }) {
   const { t } = useI18n();
   return (
-    <div className="flex items-center gap-2.5">
-      <div className="grid size-10 place-items-center rounded-lg bg-gold font-display text-xl font-bold text-gold-foreground">
-        ف
-      </div>
+    <Link
+      to="/"
+      aria-label={t("appName")}
+      className="group flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+    >
+      <img
+        src="/fattabyyano-logo.png"
+        alt=""
+        className="h-10 w-auto max-w-28 shrink-0 rounded-md bg-white object-contain transition-transform group-hover:scale-[1.02]"
+      />
       <div className="leading-tight">
-        <p
-          className={
-            light
-              ? "font-display text-base font-semibold text-sidebar-foreground"
-              : "font-display text-base font-semibold text-ink"
-          }
-        >
-          {t("appName")}
-        </p>
         <p
           className={
             light ? "text-[11px] text-sidebar-foreground/60" : "text-[11px] text-muted-foreground"
@@ -52,7 +48,7 @@ export function Logo({ light }: { light?: boolean }) {
           {t("tagline")}
         </p>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -80,11 +76,11 @@ export function AppShell({ children }: { children: ReactNode }) {
   const qc = useQueryClient();
 
   const items = [
-    { to: "/dashboard", label: t("dashboard"), icon: LayoutDashboard },
-    ...(me?.isAdmin ? [{ to: "/team", label: t("teamActivity"), icon: Users }] : []),
-    { to: "/trends", label: t("trends"), icon: Flame },
+    ...(me?.isAdmin
+      ? [{ to: "/team", label: t("teamActivity"), icon: Users }]
+      : [{ to: "/dashboard", label: t("dashboard"), icon: LayoutDashboard }]),
+    ...(!me?.isAdmin ? [{ to: "/trends", label: t("trends"), icon: Flame }] : []),
     { to: "/check", label: t("check"), icon: ScanSearch },
-    { to: "/geospatial", label: t("geospatial"), icon: MapPin },
     { to: "/history", label: me?.isAdmin ? t("masterDatabase") : t("history"), icon: History },
     { to: "/reports", label: t("reports"), icon: FileText },
     ...(me?.isAdmin ? [{ to: "/analytics", label: t("analytics"), icon: BarChart3 }] : []),
@@ -106,9 +102,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={it.to}
               to={it.to}
-              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               activeProps={{
-                className: "!bg-sidebar-primary !text-sidebar-primary-foreground font-medium",
+                className: "!bg-sidebar-primary !text-sidebar-primary-foreground font-semibold shadow-sm",
               }}
             >
               <it.icon className="size-4" />

@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Check, MailCheck, ShieldCheck } from "lucide-react";
+import { useRef, useState } from "react";
+import { Check, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -54,25 +54,19 @@ function AuthPage() {
   const navigate = useNavigate();
   const search = Route.useSearch();
   const next = search.next ?? "/";
-  const returnUrl = () => new URL(next === "/" ? "/auth" : next, window.location.origin).href;
   const [mode, setMode] = useState<"in" | "up">(search.mode ?? "in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [pendingVerification, setPendingVerification] = useState(false);
-  const [resendSeconds, setResendSeconds] = useState(60);
+  const submitInFlight = useRef(false);
   const requirements = getPasswordRequirements(password);
-
-  useEffect(() => {
-    if (!pendingVerification || resendSeconds <= 0) return;
-    const timer = window.setTimeout(() => setResendSeconds((seconds) => seconds - 1), 1000);
-    return () => window.clearTimeout(timer);
-  }, [pendingVerification, resendSeconds]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (submitInFlight.current) return;
     if (mode === "up" && !isStrongPassword(password)) return;
+    submitInFlight.current = true;
     setBusy(true);
     try {
       if (mode === "in") {
@@ -89,37 +83,17 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: returnUrl(), data: { full_name: name } },
+          options: { data: { full_name: name } },
         });
         if (error) throw error;
-        if (data.session && data.user?.email_confirmed_at) {
-          if (next !== "/") window.location.assign(next);
-          else navigate({ to: "/dashboard" });
-        } else {
-          if (data.session) await supabase.auth.signOut();
-          setPendingVerification(true);
-        }
+        if (!data.session || !data.user) throw new Error(t("signupSessionRequired"));
+        if (next !== "/") window.location.assign(next);
+        else navigate({ to: "/dashboard" });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : String(err));
     } finally {
-      setBusy(false);
-    }
-  }
-
-  async function resendVerification() {
-    if (resendSeconds > 0 || busy) return;
-    setBusy(true);
-    try {
-      const { error } = await supabase.auth.resend({ type: "signup", email, options: { emailRedirectTo: returnUrl() } });
-      if (error) throw error;
-      setResendSeconds(60);
-      toast.success(
-        lang === "ar" ? "أُرسل رابط تأكيد جديد." : "A new verification link has been sent.",
-      );
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
+      submitInFlight.current = false;
       setBusy(false);
     }
   }
@@ -145,7 +119,7 @@ function AuthPage() {
   const score = Object.values(requirements).filter(Boolean).length;
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#f0eff5] px-4 py-10">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-4 py-10">
       <div
         aria-hidden="true"
         className="absolute -start-40 -top-40 size-96 rounded-full bg-primary/10 blur-3xl"
@@ -171,64 +145,12 @@ function AuthPage() {
                 {lang === "ar" ? "مساحة عمل خاصة" : "PRIVATE WORKSPACE"}
               </p>
               <h1 className="mt-1 text-2xl font-bold">
-                {pendingVerification
-                  ? lang === "ar"
-                    ? "تحقق من بريدك"
-                    : "Verify your email"
-                  : mode === "in"
-                    ? t("signIn")
-                    : t("signUp")}
+                {mode === "in" ? t("signIn") : t("signUp")}
               </h1>
             </div>
           </div>
 
-          {pendingVerification ? (
-            <div className="space-y-5 text-center">
-              <span className="mx-auto grid size-20 place-items-center rounded-full bg-primary/15 text-primary">
-                <MailCheck className="size-10" />
-              </span>
-              <div>
-                <h2 className="font-semibold">
-                  {lang === "ar"
-                    ? "خطوة أخيرة لتفعيل حسابك"
-                    : "One last step to activate your account"}
-                </h2>
-                <p className="mt-2 break-all text-sm text-white/65">{email}</p>
-                <p className="mt-3 text-sm leading-7 text-white/65">
-                  {lang === "ar"
-                    ? "أرسلنا إليك رابط تأكيد. افتح الرسالة لتفعيل حسابك قبل تسجيل الدخول."
-                    : "We sent you a verification link. Open the email to activate your account before signing in."}
-                </p>
-              </div>
-              <Button
-                type="button"
-                className="w-full"
-                onClick={() => void resendVerification()}
-                disabled={busy || resendSeconds > 0}
-              >
-                {busy
-                  ? lang === "ar"
-                    ? "جارٍ الإرسال…"
-                    : "Sending…"
-                  : resendSeconds > 0
-                    ? `${lang === "ar" ? "إعادة الإرسال بعد" : "Resend in"} 00:${String(resendSeconds).padStart(2, "0")}`
-                    : lang === "ar"
-                      ? "إعادة إرسال الرابط"
-                      : "Resend verification link"}
-              </Button>
-              <button
-                type="button"
-                className="text-sm text-white/65 underline-offset-4 hover:text-white hover:underline"
-                onClick={() => {
-                  setPendingVerification(false);
-                  setMode("in");
-                }}
-              >
-                {lang === "ar" ? "العودة إلى تسجيل الدخول" : "Back to sign in"}
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={submit} className="space-y-4">
+          <form onSubmit={submit} className="space-y-4">
               {mode === "up" && (
                 <div className="space-y-1.5">
                   <Label className="text-white/80">{t("fullName")}</Label>
@@ -330,8 +252,7 @@ function AuthPage() {
                   {mode === "in" ? t("signUp") : t("signIn")}
                 </button>
               </p>
-            </form>
-          )}
+          </form>
         </section>
       </main>
     </div>

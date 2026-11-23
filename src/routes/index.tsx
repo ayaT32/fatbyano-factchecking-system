@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { Logo, LangSwitch } from "@/components/app-shell";
 import { useI18n } from "@/lib/i18n";
+import { useMe } from "@/lib/session";
 
 export const Route = createFileRoute("/")({
   ssr: false,
@@ -37,8 +38,10 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const { lang } = useI18n();
+  const { data: me } = useMe();
   const ar = lang === "ar";
   const copy = (arabic: string, english: string) => (ar ? arabic : english);
+  const displayName = me?.profile?.full_name || me?.user.email?.split("@")[0];
 
   const principles = [
     {
@@ -102,6 +105,8 @@ function HomePage() {
         "ابدأ الفحوصات، راجع سجلّك، واحفظ المسودات بشكل خاص أو انشر التقارير المكتملة.",
         "Run checks, review your history, and keep drafts private or publish completed reports.",
       ),
+      to: me ? "/check" : "/auth",
+      search: me ? undefined : { mode: "in" as const },
     },
     {
       icon: ShieldCheck,
@@ -110,12 +115,14 @@ function HomePage() {
         "تابع نشاط الفريق، راجع قاعدة البيانات الرئيسية، واطّلع على تقارير التدقيق.",
         "Monitor team activity, review the master database, and access audit reports.",
       ),
+      to: me?.isAdmin ? "/team" : "/auth",
+      search: me?.isAdmin ? undefined : { mode: "in" as const },
     },
   ];
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="bg-[#6e6e82] px-4 py-2 text-center text-xs font-semibold text-white sm:text-sm">
+      <div className="bg-secondary px-4 py-2 text-center text-xs font-semibold text-secondary-foreground sm:text-sm">
         {copy(
           "مساحة عمل داخلية — الدخول لموظفي التحقق والإدارة فقط.",
           "Internal workspace — for fact-checking staff and management.",
@@ -123,21 +130,33 @@ function HomePage() {
       </div>
       <header className="sticky top-0 z-40 border-b border-border/80 bg-white/95 backdrop-blur">
         <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-8">
-          <Link to="/" aria-label={copy("الصفحة الرئيسية لفتبينوا", "Fatabyyano home")}>
-            <Logo />
-          </Link>
+          <Logo />
           <div className="flex items-center gap-2 sm:gap-4">
-            <span className="hidden rounded-full border border-border bg-[#f7f7fb] px-3 py-2 text-xs font-semibold text-ink sm:inline-flex">
+            <span className="hidden rounded-full border border-border bg-secondary px-3 py-2 text-xs font-semibold text-ink sm:inline-flex">
               {copy("بوابة فريق التحقق", "Fact-checking staff portal")}
             </span>
             <LangSwitch />
-            <Link
-              to="/auth"
-              search={{ mode: "in" }}
-              className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 sm:px-5"
-            >
-              {copy("دخول الموظفين", "Staff sign in")}
-            </Link>
+            {me ? (
+              <div className="flex items-center gap-2">
+                <span className="max-w-36 truncate rounded-full border border-border bg-card px-3 py-2 text-sm font-semibold text-ink sm:max-w-52">
+                  {displayName}
+                </span>
+                <Link
+                  to="/dashboard"
+                  className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 sm:px-5"
+                >
+                  {copy("مساحة العمل", "Workspace")}
+                </Link>
+              </div>
+            ) : (
+              <Link
+                to="/auth"
+                search={{ mode: "in" }}
+                className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-sm transition hover:bg-primary/90 sm:px-5"
+              >
+                {copy("دخول الموظفين", "Staff sign in")}
+              </Link>
+            )}
           </div>
         </div>
       </header>
@@ -146,7 +165,7 @@ function HomePage() {
         <section className="relative isolate overflow-hidden bg-ink text-ink-foreground">
           <div
             aria-hidden="true"
-            className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_75%_5%,rgba(197,70,153,0.42),transparent_35%),linear-gradient(125deg,#1e1e36_25%,#29243e_70%,#432848)]"
+            className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_75%_5%,rgba(197,70,153,0.35),transparent_35%),linear-gradient(125deg,#111114_20%,#242429_70%,#303034)]"
           />
           <div
             aria-hidden="true"
@@ -201,11 +220,11 @@ function HomePage() {
                 <div className="grid size-40 place-items-center rounded-full border border-primary/50 bg-ink shadow-[0_0_70px_rgba(197,70,153,0.24)]">
                   <ShieldCheck className="size-20 stroke-[1.2] text-primary" />
                 </div>
-                <div className="absolute -start-12 top-10 flex items-center gap-2 rounded-2xl border border-white/10 bg-[#292942] px-4 py-3 text-sm text-white shadow-xl">
+                <div className="absolute -start-12 top-10 flex items-center gap-2 rounded-2xl border border-white/10 bg-[#242429] px-4 py-3 text-sm text-white shadow-xl">
                   <CheckCheck className="size-4 text-primary" />
                   {copy("مصادر موثقة", "Sources documented")}
                 </div>
-                <div className="absolute -end-12 bottom-10 rounded-2xl border border-white/10 bg-[#292942] px-4 py-3 text-sm text-white shadow-xl">
+                <div className="absolute -end-12 bottom-10 rounded-2xl border border-white/10 bg-[#242429] px-4 py-3 text-sm text-white shadow-xl">
                   {copy("مسودة خاصة أو نشر للفريق", "Private draft or team publish")}
                 </div>
               </div>
@@ -227,7 +246,7 @@ function HomePage() {
               {principles.map(({ icon: Icon, title, body }) => (
                 <article
                   key={title}
-                  className="rounded-2xl border border-border bg-[#f7f7fb] p-6 sm:p-7"
+                  className="rounded-2xl border border-border bg-secondary p-6 sm:p-7"
                 >
                   <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
                     <Icon className="size-6" />
@@ -240,7 +259,7 @@ function HomePage() {
           </div>
         </section>
 
-        <section id="workflow" className="scroll-mt-24 bg-[#f7f7fb]">
+        <section id="workflow" className="scroll-mt-24 bg-background">
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-8 lg:py-20">
             <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
               <div className="max-w-2xl">
@@ -294,17 +313,19 @@ function HomePage() {
               </p>
             </div>
             <div className="mt-8 grid gap-4 md:grid-cols-2">
-              {workspaceRoles.map(({ icon: Icon, title, body }) => (
-                <article
+              {workspaceRoles.map(({ icon: Icon, title, body, to, search }) => (
+                <Link
                   key={title}
-                  className="rounded-2xl border border-border bg-[#f7f7fb] p-6 sm:p-8"
+                  to={to}
+                  {...(search ? { search } : {})}
+                  className="group rounded-2xl border border-border bg-secondary p-6 transition hover:-translate-y-1 hover:border-primary/30 hover:bg-card hover:shadow-lg sm:p-8"
                 >
-                  <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary">
+                  <span className="grid size-12 place-items-center rounded-2xl bg-primary/10 text-primary transition group-hover:bg-primary group-hover:text-white">
                     <Icon className="size-6" />
                   </span>
                   <h3 className="mt-5 text-lg font-bold text-ink">{title}</h3>
                   <p className="mt-2 text-sm leading-7 text-muted-foreground">{body}</p>
-                </article>
+                </Link>
               ))}
             </div>
           </div>

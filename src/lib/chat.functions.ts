@@ -17,7 +17,7 @@ export const listInvestigations = createServerFn({ method: "GET" })
   });
 export const createInvestigation = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) =>
+  .validator((input) =>
     z
       .object({
         title: z.string().max(160),
@@ -47,7 +47,7 @@ export const createInvestigation = createServerFn({ method: "POST" })
   });
 export const getInvestigation = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .validator((input) => z.object({ id: z.string().uuid() }).parse(input))
   .handler(async ({ context, data }) => {
     const { data: row, error } = await context.supabase
       .from("investigation_chats")

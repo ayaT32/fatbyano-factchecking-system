@@ -28,9 +28,9 @@ const dict = {
   staffOnly: { ar: "للإدارة والفريق فقط", en: "For management and staff only" },
   noAccount: { ar: "ليس لديك حساب؟", en: "No account yet?" },
   haveAccount: { ar: "لديك حساب؟", en: "Already have an account?" },
-  checkEmail: {
-    ar: "تحقق من بريدك لتأكيد الحساب.",
-    en: "Check your email to confirm your account.",
+  signupSessionRequired: {
+    ar: "تعذر تسجيل الدخول تلقائياً. عطّل تأكيد البريد الإلكتروني في إعدادات Supabase ثم حاول مجدداً.",
+    en: "Automatic sign-in was unavailable. Disable email confirmation in Supabase settings and try again.",
   },
   welcome: { ar: "مرحباً", en: "Welcome" },
   totalClaims: { ar: "إجمالي الادعاءات", en: "Total claims" },

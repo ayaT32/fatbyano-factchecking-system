@@ -4,7 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Fattabyno palette: 30% existing pink, 40% neutral gray, 30% white surfaces. */
+/* Use pink, gray, white, and black as the shared 20/30/30/20 palette. */
 
 @theme inline {
   --font-display: "Thmanyah", Tahoma, Arial, sans-serif;
@@ -61,30 +61,30 @@
 
 :root {
   --radius: 0.85rem;
-  --background: #e9e9eb;
-  --foreground: #303034;
+  --background: #e5e5e8;
+  --foreground: #17171b;
   --card: #ffffff;
-  --card-foreground: #303034;
+  --card-foreground: #17171b;
   --popover: #ffffff;
-  --popover-foreground: #303034;
+  --popover-foreground: #17171b;
   --primary: #c54699;
   --primary-foreground: #ffffff;
   --primary-soft: #f8eaf3;
   --gold: #c54699;
   --gold-foreground: #ffffff;
   --gold-ink: #a52e7c;
-  --secondary: #dedee1;
-  --secondary-foreground: #303034;
-  --muted: #ededee;
-  --muted-foreground: #68686e;
+  --secondary: #d4d4d8;
+  --secondary-foreground: #242429;
+  --muted: #ededf0;
+  --muted-foreground: #626269;
   --accent: #f8eaf3;
   --accent-foreground: #303034;
   --destructive: #c93c4d;
   --destructive-foreground: #ffffff;
-  --border: #d7d7db;
-  --input: #c7c7cd;
+  --border: #ceced3;
+  --input: #bdbdc4;
   --ring: #c54699;
-  --ink: #c54699;
+  --ink: #17171b;
   --ink-foreground: #ffffff;
   --verdict-true: oklch(0.55 0.13 155);
   --verdict-false: oklch(0.55 0.22 28);
@@ -100,14 +100,14 @@
   --shadow-sheet: 0 1px 2px rgb(48 48 52 / 0.04), 0 8px 24px -12px rgb(48 48 52 / 0.12);
   --shadow-sheet-hover: 0 2px 4px rgb(48 48 52 / 0.05), 0 18px 40px -16px rgb(48 48 52 / 0.2);
   --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
-  --sidebar: #c54699;
+  --sidebar: #17171b;
   --sidebar-foreground: #ffffff;
   --sidebar-primary: #ffffff;
   --sidebar-primary-foreground: #a52e7c;
-  --sidebar-accent: #b23788;
+  --sidebar-accent: #2b2b31;
   --sidebar-accent-foreground: #ffffff;
-  --sidebar-border: #d570b1;
-  --sidebar-ring: #ffffff;
+  --sidebar-border: #3a3a41;
+  --sidebar-ring: #c54699;
 }
 
 @layer base {

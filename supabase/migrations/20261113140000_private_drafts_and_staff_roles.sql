@@ -7,6 +7,7 @@ alter column is_published
 set default false;
 
 drop policy if exists "claims select" on public.claims;
+drop policy if exists "claims select own or published for admin" on public.claims;
 
 create policy "claims select own or published for admin" on public.claims for
 select to authenticated using (
@@ -18,6 +19,7 @@ select to authenticated using (
     );
 
 drop policy if exists "claims update" on public.claims;
+drop policy if exists "claims update own" on public.claims;
 
 create policy "claims update own" on public.claims for
 update to authenticated using (user_id = auth.uid ())
@@ -25,6 +27,7 @@ with
     check (user_id = auth.uid ());
 
 drop policy if exists "claims delete" on public.claims;
+drop policy if exists "claims delete own or published for admin" on public.claims;
 
 create policy "claims delete own or published for admin" on public.claims for delete to authenticated using (
     user_id = auth.uid ()
@@ -35,6 +38,7 @@ create policy "claims delete own or published for admin" on public.claims for de
 );
 
 drop policy if exists "reports select" on public.reports;
+drop policy if exists "reports select own or published for admin" on public.reports;
 
 create policy "reports select own or published for admin" on public.reports for
 select to authenticated using (
@@ -52,6 +56,7 @@ select to authenticated using (
     );
 
 drop policy if exists "reports update" on public.reports;
+drop policy if exists "reports update own or published for admin" on public.reports;
 
 create policy "reports update own or published for admin" on public.reports for
 update to authenticated using (
@@ -83,6 +88,7 @@ with
     );
 
 drop policy if exists "reports delete" on public.reports;
+drop policy if exists "reports delete own or published for admin" on public.reports;
 
 create policy "reports delete own or published for admin" on public.reports for delete to authenticated using (
     user_id = auth.uid ()
@@ -99,6 +105,7 @@ create policy "reports delete own or published for admin" on public.reports for 
 );
 
 drop policy if exists "claim images read" on storage.objects;
+drop policy if exists "claim images read own or published for admin" on storage.objects;
 
 create policy "claim images read own or published for admin"
   on storage.objects for select to authenticated

@@ -59,18 +59,24 @@ after a quiet period can take longer.
 
 ### Supabase setup for private drafts and staff roles
 
-Before deploying the updated app, run
+Fresh local Supabase databases can be initialized with `supabase db reset`; the
+migrations in `supabase/migrations` create the app schema before applying the
+private-drafts and staff-role changes.
+
+For an existing Supabase project, run
 [`supabase/migrations/20261113140000_private_drafts_and_staff_roles.sql`](./supabase/migrations/20261113140000_private_drafts_and_staff_roles.sql)
 in the Supabase SQL Editor. It keeps existing claims published, makes new checks
 private by default, limits management access to published claims (and their
 reports and attachments), and assigns new self-registered accounts the
-factchecker role. Existing administrator roles are preserved. Also enable email
-confirmation in Supabase Authentication settings so new accounts must verify
-their email before entering the workspace.
+factchecker role. Existing administrator roles are preserved. Local Supabase
+signup creates a session immediately; for a hosted Supabase project, disable
+email confirmations in Authentication settings to enable the same flow. New
+accounts are saved by Supabase Auth and receive their staff profile and role
+through the database trigger.
 
-If the project has no administrator yet, register and verify the trusted admin
-account first, then promote that account once in the SQL Editor (replace the
-email with the account's email):
+If the project has no administrator yet, register the trusted admin account
+first, then promote that account once in the SQL Editor (replace the email with
+the account's email):
 
 ```sql
 update public.user_roles

@@ -1,1 +1,4 @@
 project_id = "rrsrwwdupryisgukasmm"
+
+[auth.email]
+enable_confirmations = false

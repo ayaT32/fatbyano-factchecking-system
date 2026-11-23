@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
   ArrowLeft,
@@ -15,8 +15,21 @@ import { PageHeader, StatCard } from "@/components/page-header";
 import { VerdictBadge } from "@/components/verdict-badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  beforeLoad: async () => {
+    const { data } = await supabase.auth.getUser();
+    if (data.user) {
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", data.user.id);
+      if (roles?.some((role) => role.role === "admin")) {
+        throw redirect({ to: "/team" });
+      }
+    }
+  },
   head: () => ({
     meta: [
       { title: "Dashboard — Fattabyno" },
@@ -87,13 +100,13 @@ function Dashboard() {
 
       <form
         onSubmit={startQuickCheck}
-        className="mt-8 rounded-2xl bg-ink p-5 text-white shadow-xl shadow-ink/10 sm:flex sm:items-center sm:gap-4 sm:p-6"
+        className="mt-8 rounded-2xl border border-border bg-card p-5 shadow-sheet sm:flex sm:items-center sm:gap-4 sm:p-6"
       >
         <div className="mb-4 flex-1 sm:mb-0">
-          <p className="font-semibold">
+          <p className="font-semibold text-ink">
             {lang === "ar" ? "ابدأ التحقق الآن" : "Start a fact-check"}
           </p>
-          <p className="mt-1 text-sm text-white/60">
+          <p className="mt-1 text-sm text-muted-foreground">
             {lang === "ar"
               ? "الصق رابطاً أو اكتب الادعاء الذي تريد فحصه."
               : "Paste a link or type the claim you want to verify."}
@@ -104,7 +117,7 @@ function Dashboard() {
             value={quickClaim}
             onChange={(event) => setQuickClaim(event.target.value)}
             placeholder={t("claimPlaceholder")}
-            className="h-11 min-w-0 border-white/15 bg-white/10 text-white placeholder:text-white/50"
+            className="h-11 min-w-0 bg-background"
           />
           <Button type="submit" className="h-11 shrink-0" disabled={quickClaim.trim().length < 3}>
             <Send className="rtl:rotate-180" />
