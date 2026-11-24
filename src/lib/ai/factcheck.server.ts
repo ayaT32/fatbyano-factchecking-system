@@ -18,8 +18,8 @@ export type FactCheckResult = {
 
 const SYSTEM = `You are a senior Arabic-language fact-checker at Fattabyno, a professional Arabic fact-checking organisation.
 Analyse the claim provided (text, optional source page content, optional image). Break it into its distinct checkable sub-claims and assess each one.
-Use only these verdict values: "true", "false", "misleading", "partly_true", "unverifiable".
-Be honest about uncertainty: if you cannot verify from your knowledge, use "unverifiable" and say what evidence is needed.
+Use only these verdict values (Fatabyyano's labels): "false", "altered", "misleading", "missing_context", "true", "satire", "nei".
+Be honest about uncertainty: if you cannot verify from your knowledge, use "nei" (not enough information) and say what evidence is needed.
 For images, look for signs of manipulation, mismatched context, recycled photos, or fabricated screenshots.
 Respond with ONLY a JSON object, no markdown fences, with exactly these keys:
 {"verdict": string, "confidence": integer 0-100, "category": short English topic like "Politics" | "Health" | "Economy" | "Science" | "Society" | "Conflict" | "Other",
@@ -45,12 +45,12 @@ async function fetchPageText(url: string): Promise<string | null> {
   }
 }
 
-const VALID = new Set(["true", "false", "misleading", "partly_true", "unverifiable"]);
+const VALID = new Set(["false", "altered", "misleading", "missing_context", "true", "satire", "nei"]);
 
 function normalise(raw: string): FactCheckResult {
   const match = raw.match(/\{[\s\S]*\}/);
   const parsed = JSON.parse(match ? match[0] : raw) as Partial<FactCheckResult>;
-  const v = (s: unknown) => (typeof s === "string" && VALID.has(s) ? s : "unverifiable");
+  const v = (s: unknown) => (typeof s === "string" && VALID.has(s) ? s : "nei");
   return {
     verdict: v(parsed.verdict),
     confidence: Math.max(0, Math.min(100, Math.round(Number(parsed.confidence) || 0))),

@@ -16,9 +16,15 @@ describe("DEFAME response mapping", () => {
   it.each([
     ["SUPPORTED", "true"],
     ["REFUTED", "false"],
-    ["MISSING CONTEXT", "misleading"],
-    ["CONFLICTING", "partly_true"],
-    ["NEI", "unverifiable"],
+    ["false", "false"],
+    ["altered", "altered"],
+    ["misleading", "misleading"],
+    ["missing context", "missing_context"],
+    ["true", "true"],
+    ["satire", "satire"],
+    ["not enough information", "nei"],
+    ["CONFLICTING", "nei"],
+    ["NEI", "nei"],
   ])("maps %s to %s", (source, expected) => {
     expect(mapDefameVerdict(source)).toBe(expected);
   });

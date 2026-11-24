@@ -78,11 +78,13 @@ const dict = {
   category: { ar: "الفئة", en: "Category" },
   reportCreated: { ar: "تم إنشاء التقرير", en: "Report created" },
   adminOnly: { ar: "هذه الصفحة للإدارة فقط.", en: "This page is for management only." },
-  "v.true": { ar: "صحيح", en: "True" },
-  "v.false": { ar: "كاذب", en: "False" },
+  "v.false": { ar: "زائف", en: "False" },
+  "v.altered": { ar: "معدّل", en: "Altered" },
   "v.misleading": { ar: "مضلل", en: "Misleading" },
-  "v.partly_true": { ar: "صحيح جزئياً", en: "Partly true" },
-  "v.unverifiable": { ar: "غير قابل للتحقق", en: "Unverifiable" },
+  "v.missing_context": { ar: "ينقصه سياق", en: "Missing context" },
+  "v.true": { ar: "صحيح", en: "True" },
+  "v.satire": { ar: "ساخر", en: "Satire" },
+  "v.nei": { ar: "معلومات غير كافية", en: "Not enough information" },
 } as const;
 
 export type TKey = keyof typeof dict;
@@ -121,5 +123,6 @@ export function useI18n() {
   return c;
 }
 
-export const VERDICTS = ["true", "false", "misleading", "partly_true", "unverifiable"] as const;
+// Fatabyyano's six labels, plus NEI when no conclusion was reached (a human decides)
+export const VERDICTS = ["false", "altered", "misleading", "missing_context", "true", "satire", "nei"] as const;
 export type Verdict = (typeof VERDICTS)[number];

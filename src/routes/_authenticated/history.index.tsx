@@ -41,8 +41,8 @@ function HistoryPage() {
   const [toDate, setToDate] = useState("");
   const allClaims = me?.isAdmin ? (q.data ?? []).filter((r) => r.is_published) : (q.data ?? []);
   const rows = allClaims.filter((r) => {
-    const isVerified = r.verdict === "true" || r.verdict === "partly_true";
-    const isDebunked = r.verdict === "false" || r.verdict === "misleading";
+    const isVerified = r.verdict === "true";
+    const isDebunked = ["false", "altered", "misleading", "missing_context"].includes(r.verdict ?? "");
     const date = r.created_at.slice(0, 10);
     return (
       (verdict === "all" || r.verdict === verdict) &&

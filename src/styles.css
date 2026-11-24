@@ -39,11 +39,13 @@
   --color-ring: var(--ring);
   --color-ink: var(--ink);
   --color-ink-foreground: var(--ink-foreground);
-  --color-verdict-true: var(--verdict-true);
   --color-verdict-false: var(--verdict-false);
+  --color-verdict-altered: var(--verdict-altered);
   --color-verdict-misleading: var(--verdict-misleading);
-  --color-verdict-partly: var(--verdict-partly);
-  --color-verdict-unverifiable: var(--verdict-unverifiable);
+  --color-verdict-missing-context: var(--verdict-missing-context);
+  --color-verdict-true: var(--verdict-true);
+  --color-verdict-satire: var(--verdict-satire);
+  --color-verdict-nei: var(--verdict-nei);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -86,11 +88,16 @@
   --ring: #c54699;
   --ink: #17171b;
   --ink-foreground: #ffffff;
-  --verdict-true: oklch(0.55 0.13 155);
-  --verdict-false: oklch(0.55 0.22 28);
-  --verdict-misleading: oklch(0.62 0.19 42);
-  --verdict-partly: #c54699;
-  --verdict-unverifiable: #68686e;
+  /* Fatabyyano's six labels + NEI. Hues follow fatabyyano.net (red "false" badge,
+     magenta "misleading" badge, the site's success/warning/sub-accent/muted tokens),
+     darkened so white badge text keeps a contrast of at least 4.5:1. */
+  --verdict-false: #c8102e;
+  --verdict-altered: #7b2d8e;
+  --verdict-misleading: #b5156f;
+  --verdict-missing-context: #a85d0c;
+  --verdict-true: #23795a;
+  --verdict-satire: #2f6f94;
+  --verdict-nei: #5f5f70;
   --chart-1: #c54699;
   --chart-2: #8b8b92;
   --chart-3: oklch(0.55 0.13 155);
