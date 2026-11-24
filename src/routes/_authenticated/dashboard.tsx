@@ -25,7 +25,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
         .from("user_roles")
         .select("role")
         .eq("user_id", data.user.id);
-      if (roles?.some((role) => role.role === "admin")) {
+      if (roles?.some((role) => role.role === "manager")) {
         throw redirect({ to: "/team" });
       }
     }

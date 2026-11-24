@@ -11,5 +11,5 @@ export async function requireAdmin() {
     .select("role")
     .eq("user_id", userData.user.id);
   if (roleError) throw roleError;
-  if (!(roles ?? []).some((role) => role.role === "admin")) throw redirect({ to: "/dashboard" });
+  if (!(roles ?? []).some((role) => role.role === "manager")) throw redirect({ to: "/dashboard" });
 }

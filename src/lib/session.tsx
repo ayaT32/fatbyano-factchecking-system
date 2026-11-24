@@ -16,7 +16,7 @@ export function useMe() {
         ]);
       if (profileError) throw profileError;
       if (roleError) throw roleError;
-      const isAdmin = !!roles?.some((r) => r.role === "admin");
+      const isAdmin = !!roles?.some((r) => r.role === "manager");
       return { user, profile, isAdmin };
     },
   });

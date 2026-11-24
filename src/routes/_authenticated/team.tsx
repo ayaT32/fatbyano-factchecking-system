@@ -54,7 +54,7 @@ function TeamPage() {
   const roles = rolesQuery.data ?? [];
   const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
   const allClaims = claimsQuery.data ?? [];
-  const adminCount = roles.filter((role) => role.role === "admin").length;
+  const adminCount = roles.filter((role) => role.role === "manager").length;
 
   const normalizedEmployeeQuery = employeeQuery.trim().toLocaleLowerCase();
   const filteredClaims = allClaims.filter((claim) => {
@@ -117,7 +117,7 @@ function TeamPage() {
     if (changingUser) return;
     const currentRole = roles.find((role) => role.user_id === userId);
     if (!currentRole) return;
-    if (currentRole.role === "admin" && adminCount <= 1) {
+    if (currentRole.role === "manager" && adminCount <= 1) {
       setError(c("لا يمكن إزالة صلاحية آخر مدير.", "The last administrator cannot be demoted."));
       return;
     }
@@ -127,7 +127,7 @@ function TeamPage() {
     try {
       const { error: updateError } = await supabase
         .from("user_roles")
-        .update({ role: currentRole.role === "admin" ? "staff" : "admin" })
+        .update({ role: currentRole.role === "manager" ? "fact_checker" : "manager" })
         .eq("id", currentRole.id);
       if (updateError) throw updateError;
       await queryClient.invalidateQueries({ queryKey: ["team-roles"] });
@@ -209,7 +209,7 @@ function TeamPage() {
                           {employeeId(profile.id)}
                         </td>
                         <td className="px-4 py-3">
-                          {role?.role === "admin"
+                          {role?.role === "manager"
                             ? c("الإدارة", "Management")
                             : c("مدقق", "Fact-checker")}
                         </td>
@@ -222,7 +222,7 @@ function TeamPage() {
                               !role ||
                               changingUser !== null ||
                               currentUser?.user.id === profile.id ||
-                              (role.role === "admin" && adminCount <= 1)
+                              (role.role === "manager" && adminCount <= 1)
                             }
                             onClick={() => void changeRole(profile.id)}
                           >
@@ -231,7 +231,7 @@ function TeamPage() {
                             ) : (
                               <ShieldCheck />
                             )}
-                            {role?.role === "admin"
+                            {role?.role === "manager"
                               ? c("تحويل لمدقق", "Make fact-checker")
                               : c("ترقية للإدارة", "Make management")}
                           </Button>
