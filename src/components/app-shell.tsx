@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3,
@@ -74,6 +74,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { data: me } = useMe();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+
+  // The fact-check workspace brings its own full-height layout with a sessions sidebar
+  if (pathname === "/check" || pathname.startsWith("/check/")) return <>{children}</>;
 
   const items = [
     ...(me?.isAdmin

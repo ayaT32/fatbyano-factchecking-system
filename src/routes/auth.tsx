@@ -38,12 +38,8 @@ export const Route = createFileRoute("/auth")({
     const { data } = await supabase.auth.getUser();
     if (data.user) {
       if (search.next && search.next !== "/" && !search.next.startsWith("/auth")) throw redirect({ href: search.next });
-      const { data: roles, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", data.user.id);
-      if (error) throw error;
-      throw redirect({ to: roles?.some((role) => role.role === "admin") ? "/team" : "/dashboard" });
+      // Everyone starts at the fact-check screen; trending and management come later
+      throw redirect({ to: "/check" });
     }
   },
   component: AuthPage,
@@ -70,15 +66,10 @@ function AuthPage() {
     setBusy(true);
     try {
       if (mode === "in") {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         if (next !== "/") { window.location.assign(next); return; }
-        const { data: roles, error: roleError } = await supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", data.user.id);
-        if (roleError) throw roleError;
-        navigate({ to: roles?.some((role) => role.role === "admin") ? "/team" : "/dashboard" });
+        navigate({ to: "/check" });
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -88,7 +79,7 @@ function AuthPage() {
         if (error) throw error;
         if (!data.session || !data.user) throw new Error(t("signupSessionRequired"));
         if (next !== "/") window.location.assign(next);
-        else navigate({ to: "/dashboard" });
+        else navigate({ to: "/check" });
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : String(err));
@@ -105,7 +96,7 @@ function AuthPage() {
     if (r.error) toast.error(String(r.error.message ?? r.error));
     else if (!r.redirected) {
       if (next !== "/") window.location.assign(next);
-      else navigate({ to: "/dashboard" });
+      else navigate({ to: "/check" });
     }
   }
 

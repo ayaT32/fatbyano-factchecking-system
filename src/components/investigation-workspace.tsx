@@ -176,7 +176,8 @@ export function InvestigationWorkspace(props: Props) {
           data: { title: prompt.slice(0, 100), enabledTools: tools, firstMessage },
         });
         await qc.invalidateQueries({ queryKey: ["investigations"] });
-        await navigate({ to: "/check/$id", params: { id: chat.id }, search: { start: true } });
+        // Unused since /check became the DEFAME fact-check screen (kept until Aya decides)
+        await navigate({ to: "/check/$id", params: { id: chat.id }, search: {} });
       } else {
         void sendMessage({ text: prompt, ...(attachment ? { files: [attachment] } : {}) });
         setText("");
