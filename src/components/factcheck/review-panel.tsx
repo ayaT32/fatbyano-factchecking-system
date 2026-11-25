@@ -1,34 +1,50 @@
 import { Fragment, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Download, FileText, MessageSquareQuote, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { VerdictBadge } from "@/components/verdict-badge";
 import { cn } from "@/lib/utils";
-import { useI18n, type TKey } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n";
 import { STEP_NAMES } from "@/lib/factcheck/names";
-import type { FactCheckRun, ReportBlock, ReviewComment } from "@/lib/factcheck/types";
-import { ReviewChip } from "./step-card";
+import { getSource } from "@/lib/factcheck/source";
+import type { FactCheckRun, ReviewStatus } from "@/lib/factcheck/types";
+import { ReviewChip } from "./review-chip";
 
-/** Splits a block's text around the quotes its comments are anchored to. */
+type StepName = "plan" | "analysis" | "verdict";
+interface Block {
+  id: StepName | "claim";
+  heading: string;
+  text: string;
+}
+/** A Reviewer comment anchored to a quote in a block (Google Docs style). */
+interface Comment {
+  id: string;
+  blockId: Block["id"];
+  quote: string;
+  body: string;
+  stage: StepName;
+  status: ReviewStatus;
+}
+
+/** The first sentence (or first 60 characters) of a text: where a step's comment is anchored.
+ * DEFAME's Reviewer reviews each step without quoting the text yet. */
+function anchorOf(text: string) {
+  const sentence = text.split(/(?<=[.!?؟。])\s/)[0] ?? text;
+  return sentence.length > 60 ? sentence.slice(0, 60) : sentence;
+}
+
 function renderBlock(
-  block: ReportBlock,
-  comments: ReviewComment[],
+  block: Block,
+  comments: Comment[],
   active: string | null,
   setActive: (id: string) => void,
   markRefs: Map<string, HTMLElement>,
 ) {
   const parts: ReactNode[] = [];
   let rest = block.text;
-  const ordered = comments
-    .map((c) => ({ c, at: block.text.indexOf(c.quote) }))
-    .filter((x) => x.at >= 0)
-    .sort((a, b) => a.at - b.at);
-  let offset = 0;
-  for (const { c, at } of ordered) {
-    const local = at - offset;
-    if (local < 0) continue; // overlapping quotes: keep the first
-    parts.push(rest.slice(0, local));
-    const isActive = active === c.id;
+  for (const c of comments) {
+    const at = rest.indexOf(c.quote);
+    if (at < 0) continue;
+    parts.push(rest.slice(0, at));
     parts.push(
       <span
         key={c.id}
@@ -36,23 +52,13 @@ function renderBlock(
         onClick={() => setActive(c.id)}
         className={cn(
           "cursor-pointer rounded-sm border-b-2 transition-colors",
-          isActive ? "border-primary bg-primary/25" : "border-primary/50 bg-primary/10",
+          active === c.id ? "border-primary bg-primary/25" : "border-primary/50 bg-primary/10",
         )}
       >
-        {c.suggestion ? (
-          <>
-            <del className="text-muted-foreground decoration-verdict-false/70">{c.quote}</del>
-            <ins className="ms-1 text-verdict-true no-underline decoration-verdict-true underline-offset-4 [text-decoration-line:underline]">
-              {c.suggestion}
-            </ins>
-          </>
-        ) : (
-          c.quote
-        )}
+        {c.quote}
       </span>,
     );
-    rest = rest.slice(local + c.quote.length);
-    offset = at + c.quote.length;
+    rest = rest.slice(at + c.quote.length);
   }
   parts.push(rest);
   return parts;
@@ -63,7 +69,7 @@ function CommentCard({
   active,
   onClick,
 }: {
-  comment: ReviewComment;
+  comment: Comment;
   active: boolean;
   onClick: () => void;
 }) {
@@ -88,55 +94,49 @@ function CommentCard({
         </span>
         <ReviewChip status={comment.status} className="ms-auto" />
       </div>
-      <p className="leading-6" dir="auto">
+      <p className="whitespace-pre-wrap leading-6" dir="auto">
         {comment.body}
       </p>
-      {comment.suggestion && (
-        <p className="mt-2 rounded-lg bg-muted/70 p-2 text-xs leading-5" dir="auto">
-          <span className="font-semibold">{c("اقتراح: ", "Suggestion: ")}</span>
-          <del className="text-muted-foreground">{comment.quote}</del> →{" "}
-          <span className="text-verdict-true">{comment.suggestion}</span>
-        </p>
-      )}
     </button>
   );
 }
 
-function markdownOf(run: FactCheckRun, lang: "ar" | "en", t: (k: TKey) => string) {
-  const c = (ar: string, en: string) => (lang === "ar" ? ar : en);
-  const name = (v?: string) => (v ? t(`v.${v}` as TKey) : "—");
-  const lines = [`# ${c("تقرير التحقق", "Fact-check report")}`, ""];
-  for (const b of run.report?.blocks ?? []) lines.push(`## ${b.heading ?? ""}`, "", b.text, "");
-  lines.push(
-    `## ${c("الأحكام", "Verdicts")}`,
-    "",
-    `- ${c("الوكيل", "Agent")}: ${name(run.agentVerdict)}`,
-    `- ${c("المراجع", "Reviewer")}: ${name(run.reviewerVerdict)}`,
-    `- ${c("النهائي", "Final")}: ${name(run.finalVerdict)}`,
-    "",
-  );
-  for (const d of run.humanDecisions)
-    lines.push(
-      `- ${c("قرار المدقق", "Human decision")} (${d.pause}, ${d.at}): ${d.label ? name(d.label) : d.left ? name("nei") : ""} ${d.reason ?? d.feedback ?? ""}`.trim(),
-    );
-  lines.push("", `## ${c("ملاحظات المراجع", "Reviewer comments")}`, "");
-  for (const cm of run.report?.comments ?? [])
-    lines.push(
-      `- «${cm.quote}»: ${cm.body}${cm.suggestion ? ` (${c("اقتراح", "suggestion")}: ${cm.suggestion})` : ""}`,
-    );
-  return lines.join("\n");
-}
-
 export function ReviewPanel({ run, onClose }: { run: FactCheckRun; onClose: () => void }) {
-  const { lang, t } = useI18n();
+  const { lang } = useI18n();
   const c = (ar: string, en: string) => (lang === "ar" ? ar : en);
   const [active, setActive] = useState<string | null>(null);
   const [tops, setTops] = useState<Record<string, number>>({});
   const doc = useRef<HTMLDivElement>(null);
   const markRefs = useRef(new Map<string, HTMLElement>()).current;
   const cardRefs = useRef(new Map<string, HTMLElement>()).current;
-  const blocks = run.report?.blocks ?? [];
-  const comments = useMemo(() => run.report?.comments ?? [], [run.report?.comments]);
+
+  const { blocks, comments } = useMemo(() => {
+    const name = (s: StepName) => (lang === "ar" ? STEP_NAMES[s].ar : STEP_NAMES[s].en);
+    const steps: [StepName, FactCheckRun["plan"]][] = [
+      ["verdict", run.verdictStep],
+      ["analysis", run.analysis],
+      ["plan", run.plan],
+    ];
+    const blocks: Block[] = [
+      { id: "claim", heading: c("الادعاء", "Claim"), text: run.claim.text || c("صورة", "Image") },
+    ];
+    const comments: Comment[] = [];
+    for (const [id, step] of steps) {
+      if (!step?.summary) continue;
+      blocks.push({ id, heading: name(id), text: step.summary });
+      if (step.reviewIssues) {
+        comments.push({
+          id: `c-${id}`,
+          blockId: id,
+          quote: anchorOf(step.summary),
+          body: step.reviewIssues,
+          stage: id,
+          status: step.reviewStatus ?? "not_reviewed",
+        });
+      }
+    }
+    return { blocks, comments };
+  }, [run, lang]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Place each comment next to its highlighted quote, pushing cards down so they don't overlap
   useLayoutEffect(() => {
@@ -161,17 +161,10 @@ export function ReviewPanel({ run, onClose }: { run: FactCheckRun; onClose: () =
     const ro = new ResizeObserver(place);
     if (doc.current) ro.observe(doc.current);
     return () => ro.disconnect();
-  }, [comments, markRefs, cardRefs, lang]);
+  }, [comments, markRefs, cardRefs]);
 
-  function download() {
-    const blob = new Blob([markdownOf(run, lang, t)], { type: "text/markdown;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement("a"), {
-      href: url,
-      download: `fact-check-${run.id.slice(0, 8)}.md`,
-    });
-    a.click();
-    URL.revokeObjectURL(url);
+  async function download(path: string) {
+    window.open(await getSource().reportUrl(path), "_blank", "noopener");
   }
 
   const marginHeight = Math.max(
@@ -188,42 +181,22 @@ export function ReviewPanel({ run, onClose }: { run: FactCheckRun; onClose: () =
           {comments.length}
         </span>
         <div className="ms-auto flex items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={download}>
-            <Download />
-            .md
-          </Button>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  disabled={!run.report?.pdfUrl}
-                  asChild={!!run.report?.pdfUrl}
-                >
-                  {run.report?.pdfUrl ? (
-                    <a href={run.report.pdfUrl} download>
-                      <Download />
-                      PDF
-                    </a>
-                  ) : (
-                    <>
-                      <Download />
-                      PDF
-                    </>
-                  )}
-                </Button>
-              </span>
-            </TooltipTrigger>
-            {!run.report?.pdfUrl && (
-              <TooltipContent>
-                {c(
-                  "يتوفر PDF عند الاتصال بالخادم",
-                  "PDF is available once the backend is connected",
-                )}
-              </TooltipContent>
-            )}
-          </Tooltip>
+          {run.report?.markdownPath && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => void download(run.report!.markdownPath!)}
+            >
+              <Download />
+              .md
+            </Button>
+          )}
+          {run.report?.pdfPath && (
+            <Button variant="ghost" size="sm" onClick={() => void download(run.report!.pdfPath!)}>
+              <Download />
+              PDF
+            </Button>
+          )}
           <Button variant="ghost" size="icon" onClick={onClose} aria-label={c("إغلاق", "Close")}>
             <X />
           </Button>
@@ -246,8 +219,8 @@ export function ReviewPanel({ run, onClose }: { run: FactCheckRun; onClose: () =
             </div>
             {blocks.map((block) => (
               <section key={block.id} className="mb-5">
-                {block.heading && <h3 className="mb-2 text-base font-bold">{block.heading}</h3>}
-                <p className="text-[15px] leading-8" dir="auto">
+                <h3 className="mb-2 text-base font-bold">{block.heading}</h3>
+                <p className="whitespace-pre-wrap text-[15px] leading-8" dir="auto">
                   {renderBlock(
                     block,
                     comments.filter((cm) => cm.blockId === block.id),
@@ -258,7 +231,6 @@ export function ReviewPanel({ run, onClose }: { run: FactCheckRun; onClose: () =
                     <Fragment key={i}>{p}</Fragment>
                   ))}
                 </p>
-                {/* Narrow screens: comments under their paragraph instead of in the margin */}
                 <div className="mt-2 space-y-2 @xl:hidden">
                   {comments
                     .filter((cm) => cm.blockId === block.id)

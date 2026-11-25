@@ -54,7 +54,7 @@ export type FactCheckResult = {
 type DefameStatus = z.infer<typeof statusResponseSchema>;
 type MultimediaBlock = z.infer<typeof multimediaBlockSchema>;
 
-function getConfig() {
+export function getDefameConfig() {
   const configuredUrl = process.env["DEFAME_API_URL"]?.trim();
   const apiKey = process.env["DEFAME_API_KEY"]?.trim();
   if (!configuredUrl || !apiKey) {
@@ -194,7 +194,7 @@ export async function runDefameFactCheck(input: {
   sourceUrl?: string | null | undefined;
   imageBase64?: string | null | undefined;
 }): Promise<FactCheckResult> {
-  const { baseUrl, apiKey } = getConfig();
+  const { baseUrl, apiKey } = getDefameConfig();
   const content: [string, string][] = [["text", input.claimText]];
   if (input.sourceUrl) content.push(["text", `Source URL: ${input.sourceUrl}`]);
   if (input.imageBase64) content.push(["image", input.imageBase64]);
@@ -238,7 +238,7 @@ export async function runDefameFactCheck(input: {
 }
 
 export async function verifyGeospatialImage(imageBase64: string) {
-  const { baseUrl, apiKey } = getConfig();
+  const { baseUrl, apiKey } = getDefameConfig();
   const response = await fetch(`${baseUrl}/geospatial/verify`, {
     method: "POST",
     headers: {
@@ -252,7 +252,7 @@ export async function verifyGeospatialImage(imageBase64: string) {
 }
 
 export async function geocodeAddress(address: string) {
-  const { baseUrl, apiKey } = getConfig();
+  const { baseUrl, apiKey } = getDefameConfig();
   const response = await fetch(`${baseUrl}/geospatial/geocode`, {
     method: "POST",
     headers: {
