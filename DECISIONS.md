@@ -153,3 +153,30 @@ Scope for now: the **log-in** and **fact-check** screens. Trending and managemen
   - **Answers at a pause:** browser → app server → FastAPI `/resume`, which checks the answer, writes `human_decisions` and resumes the graph; the browser never writes decisions.
 - **Options:** project: fdwmn… / rrsrw… / khfbi… / ask Aya; visibility: owner + managers / whole team / team after finish; checkpoints: Postgres in its own schema / InMemorySaver; roles: rename now / keep / separate migration; retention: finished forever + failed 30 days / everything forever / everything N years; archiving: Wayback / copy in Storage / none yet; applying: PR + SQL Editor / Supabase CLI / Lovable; answers: through FastAPI / the browser writes the row.
 - **Reason:** Eilaf chose each first option, except checkpoints (InMemorySaver for now: no DEFAME change needed before the pilot). Tested on an in-memory Postgres with Supabase stand-ins: 21 checks pass (access, roles, retention, constraints, realtime, re-running).
+
+## 23. The screen shows the plan and the final verdict, not live progress; `fact_check_steps` keeps two rows
+- **Date:** 2026-11-25
+- **Decision:** The fact-check screen shows only two moments where the human can give feedback: the plan (plan pause) and, at the end, the verdict with its analysis. There is no live step-by-step view. `fact_check_steps` stays, but DEFAME writes only the `plan` row (when the plan is made) and the `analysis`/`verdict` rows at the end, each with the Reviewer's status and issues; no row is updated during the run. Realtime on `fact_check_steps` is no longer needed (`claims` and `human_decisions` keep it, so the screen still sees "waiting for you" and "done").
+- **Options:** (a) keep the table and write only those rows; (b) drop it, put the plan in `human_decisions.context` and the analysis on `claims` or `reports`; (c) keep live per-step progress (decision #3).
+- **Reason:** Eilaf chose (a) for now: no rebuild, and the plan and the Reviewer's per-step issues are still stored for model feedback, even in Auto mode when no pause shows the plan. Supersedes the live-progress part of decision #3 and the four live step cards of decision #7.
+
+## 24. A `verdict` review mode: the human gives feedback on every final verdict (draft migration, not applied)
+- **Date:** 2026-11-26
+- **Decision:** New review mode `verdict` = the disagreement and NEI pauses **plus** a pause at the final verdict when the agent and the Reviewer **agree**. At that pause the human can confirm (`continue`), override with one of the six labels and a required reason (`label`), keep the label and leave a note for the record (`comment`, text required), or send feedback for one more agent round (`feedback`, reviewed again, once per claim). The other modes are unchanged (the verdict pause is only in `verdict` mode). Migration `20261126100000_verdict_mode.sql` allows the new mode, pause type and action; tested together with the earlier migrations on the in-memory Postgres (25 checks). DEFAME and the interface still need the matching node and screen.
+- **Options:** what the human can do: confirm / override with a reason / comment / one more round, or any mix; which modes: only a new `verdict` mode, or also `supervised`. Verdict mode with or without the disagreement and NEI pauses.
+- **Reason:** Eilaf chose all four actions, only in a new verdict mode. The disagreement and NEI pauses are included in it (my reading, to confirm) so that a disagreement in verdict mode still reaches a human instead of becoming NEI unseen.
+
+## 25. Connecting the screens to DEFAME: claim flow, screens and the demo source
+- **Date:** 2026-11-26
+- **Decision:**
+  - **Claim flow:** the app's server inserts the `claims` row as the signed-in user, uploads the image to Storage, then calls DEFAME's new endpoints (`/claims/start`, `/claims/{id}/resume`, `/claims/{id}/mode`) with the shared `api-key` header. DEFAME runs claims one at a time from a queue in one worker; a claim waiting at a pause keeps its own FactChecker, so it doesn't block the queue. DEFAME writes to Supabase with supabase-py and the service key, from one listener outside the graph's nodes.
+  - **Screens:** cards in the chat: the claim, a plan card (feedback at the plan pause), a status line with elapsed time while DEFAME works (needs a small `phase` field on `claims`, updated once per phase), a verdict card (label, both verdicts, analysis, sources, Reviewer comments, feedback and endorsement), and the review panel for the full report.
+  - **Demo source:** removed once the Supabase source works (with the development-only `/preview/check` route, which depends on it).
+- **Options:** API: new endpoints with one worker / extend the 8-worker pool; claim row: app as the user / DEFAME with the service key; API auth: shared key / verify the Supabase token; concurrency: one at a time / a few in parallel; waiting claims: own FactChecker / queue waits with a timeout / queue waits; screens: chat cards / two pages; while running: status line + time / spinner; demo source: keep for development / remove.
+- **Reason:** Eilaf chose the first option each time, except the demo source (removed: less code to maintain, at the cost of needing DEFAME running for every screen change). The DEFAME-side choices are also logged in DEFAME's DECISIONS.md when that work starts.
+
+## 26. A `phase` column for the status line (draft migration, not applied)
+- **Date:** 2026-11-26
+- **Decision:** `claims.phase` (planning, gathering_evidence, analysing, reviewing, finalizing; null when not running), set by DEFAME once per phase change and cleared at the end (`20261126110000_claim_phase.sql`). Tested with the earlier migrations on the in-memory Postgres (28 checks).
+- **Options:** a phase column / reuse `status` with more values / derive it from `fact_check_steps`.
+- **Reason:** Follows decision #25's status line. A separate column keeps `status` simple (running / paused / done / failed) and needs one small write per phase.
