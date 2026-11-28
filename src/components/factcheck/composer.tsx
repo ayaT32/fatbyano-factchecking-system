@@ -1,5 +1,15 @@
 import { useRef, useState } from "react";
-import { ArrowUp, Check, ChevronDown, ImagePlus, Loader2, Plus, Wrench, X } from "lucide-react";
+import {
+  ArrowUp,
+  CalendarDays,
+  Check,
+  ChevronDown,
+  ImagePlus,
+  Loader2,
+  Plus,
+  Wrench,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -46,9 +56,12 @@ export function Composer({
   const [tools, setTools] = useState<ToolId[]>([...DEFAULT_TOOLS]);
   const [mode, setMode] = useState<Mode>("auto"); // the default: no pauses, as in the backend
   const [model, setModel] = useState(MODELS[0]?.id ?? "");
+  const [claimDate, setClaimDate] = useState(""); // YYYY-MM-DD, optional
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
+  const dateInput = useRef<HTMLInputElement>(null);
+  const today = new Date().toLocaleDateString("en-CA"); // local date as YYYY-MM-DD
 
   function choose(file: File | undefined) {
     if (!file) return;
@@ -77,7 +90,14 @@ export function Composer({
     setBusy(true);
     setError("");
     try {
-      await onSubmit({ text: text.trim(), mode, tools, model, ...(image ? { image } : {}) });
+      await onSubmit({
+        text: text.trim(),
+        mode,
+        tools,
+        model,
+        ...(image ? { image } : {}),
+        ...(claimDate ? { claimDate } : {}),
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : c("تعذر بدء الفحص.", "Could not start the check."));
       setBusy(false);
@@ -201,6 +221,57 @@ export function Composer({
               </DropdownMenuSub>
             </DropdownMenuContent>
           </DropdownMenu>
+          {/* The claim's date (optional): DEFAME checks it as of that day */}
+          <div className="relative inline-flex items-center">
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                const input = dateInput.current;
+                if (!input) return;
+                try {
+                  input.showPicker();
+                } catch {
+                  input.focus();
+                }
+              }}
+              className={cn(
+                "inline-flex h-9 items-center gap-1.5 rounded-full border px-3 text-sm transition-colors disabled:opacity-50",
+                claimDate
+                  ? "border-ink/25 bg-muted pe-8 text-ink"
+                  : "border-transparent text-muted-foreground hover:bg-muted hover:text-ink",
+              )}
+            >
+              <CalendarDays className="size-4 text-ink" />
+              {claimDate
+                ? new Date(`${claimDate}T00:00:00`).toLocaleDateString(
+                    lang === "ar" ? "ar" : "en-GB",
+                    { day: "numeric", month: "short", year: "numeric" },
+                  )
+                : c("تاريخ الادعاء", "Claim date")}
+            </button>
+            {claimDate && (
+              <button
+                type="button"
+                onClick={() => setClaimDate("")}
+                disabled={busy}
+                aria-label={c("إزالة التاريخ", "Clear the date")}
+                className="absolute end-2 grid size-5 place-items-center rounded-full text-muted-foreground hover:bg-ink/10 hover:text-ink"
+              >
+                <X className="size-3" />
+              </button>
+            )}
+            <input
+              ref={dateInput}
+              type="date"
+              value={claimDate}
+              max={today}
+              onChange={(e) => setClaimDate(e.target.value > today ? today : e.target.value)}
+              tabIndex={-1}
+              aria-label={c("تاريخ الادعاء", "Claim date")}
+              className="pointer-events-none absolute bottom-0 start-0 h-px w-px opacity-0"
+            />
+          </div>
           {tools.length < TOOLS.length && (
             <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
               {c(

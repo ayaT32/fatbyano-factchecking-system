@@ -19,8 +19,10 @@ export function VerdictBadge({ verdict, className }: { verdict?: string | null; 
   const known = verdict ? (legacy[verdict] ?? verdict) : undefined;
   const v = known && styles[known] ? known : "nei";
   return (
-    <span className={cn("inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1", styles[v], className)}>
-      <span className="size-1.5 rounded-full bg-current" />
+    // Every label is the same grey pill; the word carries the verdict (the per-label colours
+    // in `styles` / `verdictColor` stay available for charts)
+    <span className={cn("inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-ink ring-1 ring-ink/10", className)}>
+      <span aria-hidden="true" className="size-1.5 shrink-0 rounded-full bg-ink/45" />
       {t(`v.${v}` as TKey)}
     </span>
   );

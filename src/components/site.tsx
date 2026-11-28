@@ -51,8 +51,11 @@ export function SiteHeader() {
         solid ? "bg-white/95 shadow-[0_1px_0_var(--border)] backdrop-blur" : "bg-transparent",
       )}
     >
-      <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-8">
-        <div className="max-sm:[&_p]:hidden">
+      {/* The same arrangement in both languages: logo on the right, sign-in on the left
+          (in English the row is reversed so it doesn't flip with the page direction) */}
+      <div className="mx-auto flex h-[76px] max-w-7xl items-center justify-between gap-4 px-4 sm:px-8 ltr:flex-row-reverse">
+        {/* In English the logo also sits to the right of its tagline, as in Arabic */}
+        <div className="max-sm:[&_p]:hidden ltr:[&>a]:flex-row-reverse">
           <Logo light={!solid} />
         </div>
         <nav
@@ -71,7 +74,7 @@ export function SiteHeader() {
             ),
           )}
         </nav>
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 ltr:flex-row-reverse">
           <button
             type="button"
             onClick={() => setLang(lang === "ar" ? "en" : "ar")}

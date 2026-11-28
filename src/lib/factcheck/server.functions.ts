@@ -46,6 +46,17 @@ export const startFactCheck = createServerFn({ method: "POST" })
         mode: modeSchema,
         tools: z.array(z.string().max(40)).max(10),
         model: z.string().max(60),
+        claimDate: z
+          .string()
+          .regex(/^\d{4}-\d{2}-\d{2}$/)
+          // a day's slack so "today" in a time zone ahead of UTC still passes
+          .refine(
+            (v) =>
+              !Number.isNaN(Date.parse(v)) &&
+              v <= new Date(Date.now() + 864e5).toISOString().slice(0, 10),
+            "The claim date can't be in the future.",
+          )
+          .optional(),
       })
       .refine((v) => v.text.trim() || v.imagePath, "A claim needs text or an image.")
       .parse(d),
@@ -77,6 +88,7 @@ export const startFactCheck = createServerFn({ method: "POST" })
         mode: data.mode,
         tools: data.tools.filter((t) => ["manipulation", "metadata", "geolocation"].includes(t)),
         model: data.model,
+        ...(data.claimDate ? { date: data.claimDate } : {}),
       });
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);

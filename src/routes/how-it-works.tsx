@@ -1,8 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowUpRight } from "lucide-react";
+import { ClaimCard } from "@/components/claim-card";
 import { Reveal } from "@/components/motion";
 import { RowsSection, SiteFooter, SiteHeader, useCopy } from "@/components/site";
 import { VerdictBadge } from "@/components/verdict-badge";
+import { UserGuide } from "@/components/user-guide";
+import { WorkflowPhases } from "@/components/workflow-phases";
 import { MODE_NAMES } from "@/lib/factcheck/names";
 import { useI18n } from "@/lib/i18n";
 import { useMe } from "@/lib/session";
@@ -130,28 +133,58 @@ function HowItWorksPage() {
             className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_80%_0%,rgba(197,70,153,0.3),transparent_40%),linear-gradient(125deg,#111114_20%,#242429_70%,#303034)]"
           />
           <div aria-hidden="true" className="hairline-grid absolute inset-0 -z-10" />
-          <Reveal className="mx-auto max-w-7xl px-4 pb-28 pt-20 sm:px-8 lg:pb-32 lg:pt-16">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">
-              {copy("كيف يعمل", "How it works")}
-            </p>
-            <h1 className="mt-5 max-w-3xl text-balance text-5xl leading-[1.12] sm:text-6xl [html[lang=ar]_&]:leading-[1.4]">
-              {copy("من ادعاء إلى تقرير موثّق", "From a claim to a verified report")}
-              <span className="text-shine block">{copy("خطوة بخطوة.", "step by step.")}</span>
-            </h1>
-            <span
-              aria-hidden="true"
-              className="animate-grow mt-6 block h-1 w-28 origin-left rounded-full bg-gradient-to-r from-primary to-primary/0 rtl:origin-right rtl:bg-gradient-to-l"
-            />
-            <p className="mt-7 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">
-              {copy(
-                "يعمل وكيل الذكاء الاصطناعي ومراجعه معاً، وتبقى أنت صاحب القرار. هذا ما يحدث لكل ادعاء.",
-                "An AI agent and a Reviewer work together, and you stay in charge. This is what happens to every claim.",
-              )}
-            </p>
-          </Reveal>
+          <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 pb-28 pt-20 sm:px-8 lg:grid-cols-[1.15fr_0.85fr] lg:pb-32 lg:pt-16">
+            <Reveal>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/70">
+                {copy("كيف يعمل", "How it works")}
+              </p>
+              <h1 className="mt-5 max-w-3xl text-balance text-5xl leading-[1.12] sm:text-6xl [html[lang=ar]_&]:leading-[1.4]">
+                {copy("من ادعاء إلى تقرير موثّق", "From a claim to a verified report")}
+                <span className="text-shine block">{copy("خطوة بخطوة.", "step by step.")}</span>
+              </h1>
+              <span
+                aria-hidden="true"
+                className="animate-grow mt-6 block h-1 w-28 origin-left rounded-full bg-gradient-to-r from-primary to-primary/0 rtl:origin-right rtl:bg-gradient-to-l"
+              />
+              <p className="mt-7 max-w-2xl text-base leading-8 text-white/75 sm:text-lg">
+                {copy(
+                  "يعمل وكيل الذكاء الاصطناعي ومراجعه معاً، وتبقى أنت صاحب القرار. هذا ما يحدث لكل ادعاء.",
+                  "An AI agent and a Reviewer work together, and you stay in charge. This is what happens to every claim.",
+                )}
+              </p>
+            </Reveal>
+            {/* Canon, the AI fact-checker character, peeking out of the same live example as
+              the front page (a claim typed in, the steps ticking through, then the verdict).
+              He sits in a window that ends at the card's top edge: he rises out of the card
+              once, then bobs gently (`.canon-rise` / `.canon-bob` in styles.css). */}
+            <Reveal delay={150} className="flex justify-center lg:justify-end">
+              <div className="w-full max-w-md">
+                <div className="relative h-52 overflow-hidden sm:h-56">
+                  <div className="canon-rise absolute inset-x-0 -bottom-1 flex justify-center">
+                    <img
+                      src="/images/canon.webp"
+                      alt={copy(
+                        "كانون، شخصية المدقق الآلي في فتبينوا",
+                        "Canon, Fatabyyano's AI fact-checker character",
+                      )}
+                      width={320}
+                      height={303}
+                      className="canon-bob w-56 drop-shadow-[0_18px_28px_rgba(0,0,0,0.55)] sm:w-60"
+                    />
+                  </div>
+                  <span className="absolute start-1 top-4 rounded-full border border-white/25 bg-black/40 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
+                    {copy("كانون · المدقق الآلي", "Canon · AI fact-checker")}
+                  </span>
+                </div>
+                <div className="relative z-10 -mt-1">
+                  <ClaimCard ar={lang === "ar"} />
+                </div>
+              </div>
+            </Reveal>
+          </div>
         </section>
 
-        {/* The process as one continuous line: a dot per step, no numbers */}
+        {/* The process as one continuous line, no dots or numbers */}
         <section className="bg-white text-ink">
           <div className="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-8 lg:grid-cols-[0.85fr_1.15fr] lg:gap-16 lg:py-24">
             <Reveal className="lg:sticky lg:top-28 lg:self-start">
@@ -170,16 +203,7 @@ function HowItWorksPage() {
             </Reveal>
             <ol className="relative ms-1.5 border-s-2 border-ink/15">
               {steps.map((step, i) => (
-                <Reveal
-                  as="li"
-                  key={i}
-                  delay={i * 80}
-                  className="group relative ps-8 pb-10 last:pb-0"
-                >
-                  <span
-                    aria-hidden="true"
-                    className="absolute -start-[7px] top-2.5 size-3 rounded-full border-2 border-white bg-ink ring-2 ring-ink/15 transition-colors duration-300 group-hover:bg-primary"
-                  />
+                <Reveal as="li" key={i} delay={i * 80} className="relative ps-8 pb-10 last:pb-0">
                   <h3 className="text-xl">{step.title}</h3>
                   <p className="mt-2 max-w-xl text-base leading-8">{step.body}</p>
                 </Reveal>
@@ -189,7 +213,7 @@ function HowItWorksPage() {
         </section>
 
         <RowsSection
-          className="border-y border-border bg-background"
+          className="border-y border-border bg-blush"
           eyebrow={copy("طرق العمل", "Modes")}
           title={copy("أنت تحدد متى يتوقف.", "You choose when it stops.")}
           intro={copy(
@@ -199,20 +223,97 @@ function HowItWorksPage() {
           rows={modes}
         />
 
-        <RowsSection
-          className="bg-white"
-          eyebrow={copy("التصنيفات", "Labels")}
-          title={copy("تصنيفات فتبينوا.", "Fatabyyano's labels.")}
-          intro={copy(
-            "ستة تصنيفات، إضافة إلى «معلومات غير كافية» عندما لا يصل الفحص إلى نتيجة.",
-            "Six labels, plus 'not enough information' when the check reaches no conclusion.",
-          )}
-          rows={labels.map(([verdict, body]) => ({
-            title: "",
-            lead: <VerdictBadge verdict={verdict} className="px-3 py-1 text-sm" />,
-            body,
-          }))}
-        />
+        {/* The six labels as a 3 x 2 grid, with "not enough information" underneath */}
+        <section className="bg-white text-ink">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-8 lg:py-24">
+            <Reveal className="max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.2em]">
+                {copy("التصنيفات", "Labels")}
+              </p>
+              <h2 className="mt-4 text-4xl leading-tight sm:text-5xl">
+                {copy("تصنيفات فتبينوا.", "Fatabyyano's labels.")}
+              </h2>
+              <p className="mt-5 text-base leading-8">
+                {copy(
+                  "ستة تصنيفات، إضافة إلى «معلومات غير كافية» عندما لا يصل الفحص إلى نتيجة.",
+                  "Six labels, plus 'not enough information' when the check reaches no conclusion.",
+                )}
+              </p>
+            </Reveal>
+            <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {labels
+                .filter(([verdict]) => verdict !== "nei")
+                .map(([verdict, body], i) => (
+                  <Reveal
+                    as="li"
+                    key={verdict}
+                    delay={i * 70}
+                    className="rounded-2xl border border-border bg-white p-6 transition-colors duration-300 hover:bg-secondary/40"
+                  >
+                    <VerdictBadge verdict={verdict} className="px-3 py-1 text-sm" />
+                    <p className="mt-4 text-base leading-7">{body}</p>
+                  </Reveal>
+                ))}
+            </ul>
+            {labels
+              .filter(([verdict]) => verdict === "nei")
+              .map(([verdict, body]) => (
+                <Reveal
+                  key={verdict}
+                  className="mt-4 flex flex-wrap items-center gap-4 rounded-2xl border border-dashed border-ink/20 px-6 py-4"
+                >
+                  <VerdictBadge verdict={verdict} className="px-3 py-1 text-sm" />
+                  <p className="text-base leading-7">{body}</p>
+                </Reveal>
+              ))}
+          </div>
+        </section>
+
+        {/* A guide for the people using the fact-checker, each step beside its screen */}
+        <section id="guide" className="scroll-mt-28 border-t border-border bg-blush text-ink">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-8 lg:py-24">
+            <Reveal className="max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.2em]">
+                {copy("دليل المستخدم", "User guide")}
+              </p>
+              <h2 className="mt-4 text-4xl leading-tight sm:text-5xl">
+                {copy("كيف تستخدم المدقق الآلي.", "How to use the AI fact-checker.")}
+              </h2>
+              <p className="mt-5 text-base leading-8">
+                {copy(
+                  "من كتابة الادعاء إلى حفظ التقرير: أين تضغط، وما الأدوات المتاحة، ومتى يحتاج الفحص قرارك.",
+                  "From writing the claim to saving the report: where to click, which tools you have, and when the check needs your decision.",
+                )}
+              </p>
+            </Reveal>
+            <div className="mt-16">
+              <UserGuide />
+            </div>
+          </div>
+        </section>
+
+        {/* The same workflow as phases, in the style fact-checking organisations use */}
+        <section id="phases" className="scroll-mt-28 border-t border-border bg-white text-ink">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-8 lg:py-24">
+            <Reveal className="max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.2em]">
+                {copy("مراحل العمل", "Workflow phases")}
+              </p>
+              <h2 className="mt-4 text-4xl leading-tight sm:text-5xl">
+                {copy("خمس مراحل، والقرار لك.", "Five phases, and the decision is yours.")}
+              </h2>
+              <p className="mt-5 text-base leading-8">
+                {copy(
+                  "اضغط على أي مرحلة لترى ما يحدث فيها ومن يقوم به.",
+                  "Select a phase to see what happens in it and who does it.",
+                )}
+              </p>
+            </Reveal>
+            <Reveal delay={120} className="mt-12">
+              <WorkflowPhases />
+            </Reveal>
+          </div>
+        </section>
 
         <section className="bg-ink text-white">
           <Reveal className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-6 px-4 py-14 sm:px-8">

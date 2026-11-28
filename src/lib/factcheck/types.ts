@@ -151,6 +151,9 @@ export interface StartInput {
   mode: Mode;
   tools: ToolId[];
   model: string;
+  /** When the claim was made or published (YYYY-MM-DD), if known. DEFAME then judges it as of
+   * that date and leaves out sources published after it. */
+  claimDate?: string;
 }
 
 /** Where runs come from. The screens never talk to the backend directly. */

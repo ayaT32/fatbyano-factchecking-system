@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { hasManagementRole } from "@/lib/auth";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   beforeLoad: async () => {
@@ -58,13 +59,6 @@ function Dashboard() {
   const flaggedCount = visibleClaims.filter((c) =>
     ["false", "altered", "misleading", "missing_context"].includes(c.verdict ?? ""),
   ).length;
-  const confidenceRows = visibleClaims.filter((claim) => claim.confidence !== null);
-  const trustScore = confidenceRows.length
-    ? Math.round(
-        confidenceRows.reduce((total, claim) => total + (claim.confidence ?? 0), 0) /
-          confidenceRows.length,
-      )
-    : null;
 
   function startQuickCheck(event: React.FormEvent) {
     event.preventDefault();
@@ -155,18 +149,18 @@ function Dashboard() {
         {[
           { label: t("totalClaims"), value: visibleClaims.length, accent: true },
           { label: t("thisWeek"), value: week },
-          { label: t("avgConfidence"), value: trustScore === null ? "—" : `${trustScore}%` },
-          { label: t("reportsCount"), value: reports.length },
-        ].map(({ label, value, accent }, i) => (
+          // The last card is twice as wide, filling the space beside the quick-check box
+          { label: t("reportsCount"), value: reports.length, wide: true },
+        ].map(({ label, value, accent, wide }, i) => (
           <Reveal
             key={i}
             delay={80 + i * 70}
             onPointerMove={trackSpotlight}
-            className={
-              accent
-                ? "spotlight rounded-3xl border border-primary/15 bg-primary-soft p-5"
-                : "spotlight rounded-3xl border border-border bg-card p-5"
-            }
+            className={cn(
+              "spotlight rounded-3xl border p-5",
+              accent ? "border-primary/15 bg-primary-soft" : "border-border bg-card",
+              wide && "sm:col-span-2",
+            )}
           >
             <p
               className={

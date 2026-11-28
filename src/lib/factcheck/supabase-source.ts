@@ -302,6 +302,7 @@ export class SupabaseSource implements FactCheckSource {
         tools: input.tools,
         model: input.model,
         ...(imagePath ? { imagePath } : {}),
+        ...(input.claimDate ? { claimDate: input.claimDate } : {}),
       },
     });
     return id;

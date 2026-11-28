@@ -1,9 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, LoaderCircle, Quote } from "lucide-react";
-import { useEffect, useState } from "react";
+import { Canon } from "@/components/canon";
+import { ClaimCard } from "@/components/claim-card";
 import { Reveal } from "@/components/motion";
 import { RowsSection, SiteFooter, SiteHeader, type Row } from "@/components/site";
-import { VerdictBadge } from "@/components/verdict-badge";
 import { useI18n } from "@/lib/i18n";
 import { useMe } from "@/lib/session";
 import { cn } from "@/lib/utils";
@@ -31,126 +30,10 @@ export const Route = createFileRoute("/")({
   component: HomePage,
 });
 
-type Example = { claim: string; verdict: "false" | "misleading" | "true" };
-
-/** The hero's "claim being checked" card: types an example claim, ticks through the four
- * steps, shows the verdict, then moves to the next example. Static with reduced motion. */
-function ClaimCard({ ar }: { ar: boolean }) {
-  const examples: Example[] = ar
-    ? [
-        { claim: "صورة تُظهر انهيار جسر الملك فهد هذا الأسبوع", verdict: "false" },
-        { claim: "فيديو قديم يُنشر على أنه من احتجاجات اليوم", verdict: "misleading" },
-        { claim: "وزارة الصحة تعلن حملة تطعيم وطنية جديدة", verdict: "true" },
-      ]
-    : [
-        { claim: "A photo shows the King Fahd Causeway collapsing this week", verdict: "false" },
-        { claim: "An old video shared as footage from today's protests", verdict: "misleading" },
-        {
-          claim: "The health ministry announces a new national vaccination drive",
-          verdict: "true",
-        },
-      ];
-  const steps = ar
-    ? ["الخطة", "الأدلة", "التحليل", "الحكم"]
-    : ["Plan", "Evidence", "Analysis", "Verdict"];
-
-  const [index, setIndex] = useState(0);
-  const [typed, setTyped] = useState(0);
-  const [done, setDone] = useState(0);
-  const example = examples[index % examples.length]!;
-
-  useEffect(() => {
-    const text = example.claim;
-    const timers: ReturnType<typeof setTimeout>[] = [];
-    const next = () => setIndex((i) => (i + 1) % examples.length);
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setTyped(text.length);
-      setDone(steps.length);
-      timers.push(setTimeout(next, 7000));
-      return () => timers.forEach(clearTimeout);
-    }
-    setTyped(0);
-    setDone(0);
-    for (let c = 1; c <= text.length; c++) timers.push(setTimeout(() => setTyped(c), c * 42));
-    const typedAt = text.length * 42 + 350;
-    for (let s = 1; s <= steps.length; s++) {
-      timers.push(setTimeout(() => setDone(s), typedAt + s * 520));
-    }
-    timers.push(setTimeout(next, typedAt + steps.length * 520 + 2800));
-    return () => timers.forEach(clearTimeout);
-    // examples/steps are rebuilt each render; the language and index are what matter
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, ar]);
-
-  return (
-    <div className="w-full max-w-md rounded-3xl border border-white/15 bg-[#1c1c21]/85 p-5 shadow-2xl backdrop-blur-md sm:p-6">
-      <div className="flex items-center justify-between text-xs text-white/55">
-        <span className="flex items-center gap-2">
-          <span className="size-1.5 animate-pulse rounded-full bg-primary" />
-          {ar ? "ادعاء قيد الفحص" : "Claim under review"}
-        </span>
-        <span className="tabular-nums" dir="ltr">
-          {(index % examples.length) + 1} / {examples.length}
-        </span>
-      </div>
-      <div className="mt-4 flex gap-3 rounded-2xl bg-black/25 p-4">
-        <Quote className="size-4 shrink-0 text-primary" />
-        <p className="min-h-14 text-sm leading-7 text-white" dir="auto">
-          {example.claim.slice(0, typed)}
-          {typed < example.claim.length && (
-            <span className="animate-caret ms-0.5 inline-block h-4 w-px translate-y-0.5 bg-white" />
-          )}
-        </p>
-      </div>
-      <ol className="mt-4 grid grid-cols-4 gap-2">
-        {steps.map((label, s) => {
-          const state =
-            done > s ? "done" : done === s && typed >= example.claim.length ? "now" : "wait";
-          return (
-            <li key={s} className="flex flex-col items-center gap-1.5 text-[11px]">
-              <span
-                className={cn(
-                  "grid size-7 place-items-center rounded-full transition-colors duration-500",
-                  state === "done" ? "bg-primary text-white" : "bg-white/10 text-white/45",
-                )}
-              >
-                {state === "done" ? (
-                  <Check className="size-3.5" />
-                ) : state === "now" ? (
-                  <LoaderCircle className="size-3.5 animate-spin" />
-                ) : (
-                  <span className="size-1 rounded-full bg-current" />
-                )}
-              </span>
-              <span
-                className={cn(
-                  "transition-colors duration-500",
-                  state === "done" ? "text-white" : "text-white/45",
-                )}
-              >
-                {label}
-              </span>
-            </li>
-          );
-        })}
-      </ol>
-      <div className="mt-5 flex h-7 items-center justify-between border-t border-white/10 pt-4">
-        <span className="text-xs text-white/55">{ar ? "الحكم" : "Verdict"}</span>
-        <span
-          className={cn(
-            "transition-all duration-500",
-            done >= steps.length ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0",
-          )}
-        >
-          <VerdictBadge verdict={example.verdict} />
-        </span>
-      </div>
-    </div>
-  );
-}
-
 /** Soft 3D-style shapes in the site colours: a pink ring, spheres and slanted sticks that
- * float gently behind the claim card. Purely decorative. */
+ * float gently behind the claim card. Purely decorative. From the small breakpoint up, Canon
+ * stands on the card's near side, so the shapes there (grey spheres, sticks, zigzag) are
+ * hidden and only the pink ring and pink sphere remain. */
 function HeroArt() {
   const sphere = (light: string, base: string, dark: string) =>
     `radial-gradient(circle at 32% 28%, ${light} 0%, ${base} 45%, ${dark} 100%)`;
@@ -192,7 +75,7 @@ function HeroArt() {
       </svg>
       {/* Spheres */}
       <span
-        className="animate-float absolute start-[6%] top-[6%] size-16 rounded-full shadow-[0_18px_30px_rgba(0,0,0,0.45)] [animation-delay:-2s] sm:size-20"
+        className="animate-float absolute start-[6%] top-[6%] size-16 rounded-full shadow-[0_18px_30px_rgba(0,0,0,0.45)] [animation-delay:-2s] sm:hidden"
         style={{ background: sphere("#8b8b92", "#3a3a41", "#111114") }}
       />
       <span
@@ -200,11 +83,11 @@ function HeroArt() {
         style={{ background: sphere("#f6c7e4", "#c54699", "#5e1a47") }}
       />
       <span
-        className="animate-float absolute bottom-[36%] start-[0%] size-9 rounded-full [animation-delay:-1s]"
+        className="animate-float absolute bottom-[36%] start-[0%] size-9 rounded-full [animation-delay:-1s] sm:hidden"
         style={{ background: sphere("#ffffff", "#ceced3", "#68686e") }}
       />
       {/* Slanted sticks */}
-      <div className="absolute bottom-[0%] start-[16%] flex rotate-[-38deg] gap-5">
+      <div className="absolute bottom-[0%] start-[16%] flex rotate-[-38deg] gap-5 sm:hidden">
         {[
           "from-[#f6c7e4] to-[#c54699]",
           "from-white to-[#8b8b92]",
@@ -221,7 +104,10 @@ function HeroArt() {
         ))}
       </div>
       {/* Zigzag lines */}
-      <svg viewBox="0 0 120 40" className="absolute start-[24%] top-[3%] w-24 text-white/30">
+      <svg
+        viewBox="0 0 120 40"
+        className="absolute start-[24%] top-[3%] w-24 text-white/30 sm:hidden"
+      >
         {[8, 20, 32].map((y) => (
           <polyline
             key={y}
@@ -362,12 +248,6 @@ function HomePage() {
                     ? copy("افتح مساحة العمل", "Open the workspace")
                     : copy("الدخول إلى مساحة العمل", "Sign in to the workspace")}
                 </Link>
-                <Link
-                  to="/how-it-works"
-                  className="text-sm font-semibold text-white/85 underline decoration-white/40 underline-offset-8 transition hover:text-white hover:decoration-primary"
-                >
-                  {copy("كيف يعمل", "How it works")}
-                </Link>
               </div>
             </Reveal>
             <Reveal
@@ -375,8 +255,21 @@ function HomePage() {
               className="relative flex min-h-[430px] items-center justify-center sm:min-h-[480px]"
             >
               <HeroArt />
-              <div className="relative z-10 w-full max-w-sm">
-                <ClaimCard ar={ar} />
+              <div className="relative z-10 flex w-full max-w-[36rem] justify-center sm:justify-end">
+                <div className="relative w-full sm:w-[68%] sm:max-w-sm">
+                  {/* Canon leans on the card as in the artwork: 50.75% of the card's width,
+                      his ear over its left edge, the card's top at a quarter of his height.
+                      Hidden on phones, where there's no room beside the card. */}
+                  <div className="absolute end-[94.06%] top-0 z-20 -mt-[23.8%] hidden w-[50.75%] sm:block rtl:-scale-x-100">
+                    <Canon
+                      alt={copy(
+                        "كانون، المدقق الآلي، يقرأ ورقة.",
+                        "Canon, the AI fact-checker, reading a paper.",
+                      )}
+                    />
+                  </div>
+                  <ClaimCard ar={ar} />
+                </div>
               </div>
             </Reveal>
           </div>
@@ -389,18 +282,32 @@ function HomePage() {
           title={copy("منهج واضح لكل ادعاء.", "A consistent process for every claim.")}
           rows={principles}
           footer={
-            <Link
-              to="/how-it-works"
-              className="inline-flex items-center gap-2 text-base font-semibold text-ink underline decoration-2 underline-offset-8 hover:decoration-primary"
-            >
-              {copy("اطّلع على خطوات العمل", "See how a check works")}
-            </Link>
+            <>
+              <Link
+                to="/how-it-works"
+                className="inline-flex items-center gap-2 text-base font-semibold text-ink underline decoration-2 underline-offset-8 hover:decoration-primary"
+              >
+                {copy("اطّلع على خطوات العمل", "See how a check works")}
+              </Link>
+              {/* A claim circled and stamped by hand, in the site's pink */}
+              <img
+                src="/images/fact-check-hand.webp"
+                alt={copy(
+                  "يد تحيط ادعاءً بدائرة على ورقة وتختمه بكلمة «خطأ»",
+                  "A hand circling a claim on a printed page, stamped FALSE",
+                )}
+                width={680}
+                height={580}
+                loading="lazy"
+                className="mt-10 w-full max-w-md -rotate-1 rounded-3xl border border-border shadow-[0_30px_60px_-30px_rgba(23,23,27,0.45)] transition-transform duration-500 hover:rotate-0"
+              />
+            </>
           }
         />
 
         <RowsSection
           id="workspace"
-          className="bg-background"
+          className="bg-blush"
           eyebrow={copy("مساحة الفريق", "Team workspace")}
           title={copy("أدوات تناسب دورك.", "Tools for your role.")}
           intro={copy(
