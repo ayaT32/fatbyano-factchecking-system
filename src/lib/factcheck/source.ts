@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
-import { DemoSource } from "./demo-source";
+import { SupabaseSource } from "./supabase-source";
 import type { FactCheckRun, FactCheckSource, SessionSummary } from "./types";
 
 let source: FactCheckSource | undefined;
 
-/** The source the screens read from. Only the demo source exists so far; a Supabase
- * Realtime source replaces it once DEFAME writes runs to Supabase (decision #3). */
+/** The source the screens read from: the Supabase archive that DEFAME writes (DECISIONS.md #25). */
 export function getSource(): FactCheckSource {
-  source ??= new DemoSource();
+  source ??= new SupabaseSource();
   return source;
 }
 
@@ -17,7 +16,7 @@ export function useSessions() {
   return sessions;
 }
 
-/** `undefined` while loading, `null` if the run doesn't exist. */
+/** `undefined` while loading, `null` if the run doesn't exist (or can't be read). */
 export function useRun(id: string | undefined) {
   const [run, setRun] = useState<FactCheckRun | null | undefined>(undefined);
   useEffect(() => {

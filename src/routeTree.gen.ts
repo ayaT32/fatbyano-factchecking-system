@@ -27,7 +27,6 @@ import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/t
 import { Route as AuthenticatedTrendsRouteImport } from './routes/_authenticated/trends'
 import { Route as ApiInvestigationChatRouteImport } from './routes/api/investigation-chat'
 import { Route as ManagementLoginRouteImport } from './routes/management.login'
-import { Route as PreviewCheckRouteImport } from './routes/preview.check'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedCheckIndexRouteImport } from './routes/_authenticated/check.index'
 import { Route as AuthenticatedCheckIdRouteImport } from './routes/_authenticated/check.$id'
@@ -127,11 +126,6 @@ const ManagementLoginRoute = ManagementLoginRouteImport.update({
   path: '/management/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PreviewCheckRoute = PreviewCheckRouteImport.update({
-  id: '/preview/check',
-  path: '/preview/check',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -189,7 +183,6 @@ export interface FileRoutesByFullPath {
   '/trends': typeof AuthenticatedTrendsRoute
   '/api/investigation-chat': typeof ApiInvestigationChatRoute
   '/management/login': typeof ManagementLoginRoute
-  '/preview/check': typeof PreviewCheckRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/check/$id': typeof AuthenticatedCheckIdRoute
   '/history/$id': typeof AuthenticatedHistoryIdRoute
@@ -214,7 +207,6 @@ export interface FileRoutesByTo {
   '/trends': typeof AuthenticatedTrendsRoute
   '/api/investigation-chat': typeof ApiInvestigationChatRoute
   '/management/login': typeof ManagementLoginRoute
-  '/preview/check': typeof PreviewCheckRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/check/$id': typeof AuthenticatedCheckIdRoute
   '/history/$id': typeof AuthenticatedHistoryIdRoute
@@ -243,7 +235,6 @@ export interface FileRoutesById {
   '/_authenticated/trends': typeof AuthenticatedTrendsRoute
   '/api/investigation-chat': typeof ApiInvestigationChatRoute
   '/management/login': typeof ManagementLoginRoute
-  '/preview/check': typeof PreviewCheckRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/check/$id': typeof AuthenticatedCheckIdRoute
   '/_authenticated/history/$id': typeof AuthenticatedHistoryIdRoute
@@ -272,7 +263,6 @@ export interface FileRouteTypes {
     | '/trends'
     | '/api/investigation-chat'
     | '/management/login'
-    | '/preview/check'
     | '/.lovable/oauth/consent'
     | '/check/$id'
     | '/history/$id'
@@ -297,7 +287,6 @@ export interface FileRouteTypes {
     | '/trends'
     | '/api/investigation-chat'
     | '/management/login'
-    | '/preview/check'
     | '/.lovable/oauth/consent'
     | '/check/$id'
     | '/history/$id'
@@ -325,7 +314,6 @@ export interface FileRouteTypes {
     | '/_authenticated/trends'
     | '/api/investigation-chat'
     | '/management/login'
-    | '/preview/check'
     | '/.lovable/oauth/consent'
     | '/_authenticated/check/$id'
     | '/_authenticated/history/$id'
@@ -344,7 +332,6 @@ export interface RootRouteChildren {
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiInvestigationChatRoute: typeof ApiInvestigationChatRoute
   ManagementLoginRoute: typeof ManagementLoginRoute
-  PreviewCheckRoute: typeof PreviewCheckRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
@@ -476,13 +463,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ManagementLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/preview/check': {
-      id: '/preview/check'
-      path: '/preview/check'
-      fullPath: '/preview/check'
-      preLoaderRoute: typeof PreviewCheckRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -607,7 +587,6 @@ const rootRouteChildren: RootRouteChildren = {
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiInvestigationChatRoute: ApiInvestigationChatRoute,
   ManagementLoginRoute: ManagementLoginRoute,
-  PreviewCheckRoute: PreviewCheckRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport

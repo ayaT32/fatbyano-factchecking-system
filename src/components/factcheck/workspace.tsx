@@ -1,27 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import {
-  AlertTriangle,
-  BellRing,
-  FileText,
-  FlaskConical,
-  Menu,
-  PenLine,
-  UserRound,
-} from "lucide-react";
+import { FileText, Menu, PenLine } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { VerdictBadge } from "@/components/verdict-badge";
 import { cn } from "@/lib/utils";
 import { useI18n, type TKey } from "@/lib/i18n";
 import { getSource, useRun, useSessions } from "@/lib/factcheck/source";
 import { MODE_NAMES } from "@/lib/factcheck/names";
-import type { FactCheckRun, SessionSummary, StartInput } from "@/lib/factcheck/types";
+import type { SessionSummary, StartInput } from "@/lib/factcheck/types";
 import { Composer } from "./composer";
 import { PauseCard } from "./pause-card";
 import { ReviewPanel } from "./review-panel";
-import { StepCard } from "./step-card";
+import { PlanCard, StatusLine, VerdictCard } from "./run-cards";
 
 /** Where a session links to; the dev-only preview route has its own path. */
 export type SessionLink = (id?: string) => string;
@@ -87,7 +78,9 @@ function SessionsSidebar({
             aria-current={s.id === activeId ? "page" : undefined}
             className={cn(
               "group flex items-start gap-2 rounded-lg px-3 py-2 text-sm",
-              s.id === activeId ? "bg-accent font-medium text-accent-foreground" : "hover:bg-accent/60",
+              s.id === activeId
+                ? "bg-accent font-medium text-accent-foreground"
+                : "hover:bg-accent/60",
             )}
           >
             <span className="min-w-0 flex-1">
@@ -98,12 +91,9 @@ function SessionsSidebar({
                 <span
                   className={cn(
                     "mt-0.5 flex items-center gap-1 text-[11px]",
-                    s.status === "paused"
-                      ? "font-semibold text-primary"
-                      : "text-muted-foreground",
+                    s.status === "paused" ? "font-semibold text-primary" : "text-muted-foreground",
                   )}
                 >
-                  {s.status === "paused" && <BellRing className="size-3" />}
                   {statusLine(s)}
                 </span>
               ) : s.finalVerdict ? (
@@ -118,70 +108,7 @@ function SessionsSidebar({
           </a>
         ))}
       </nav>
-      {getSource().kind === "demo" && (
-        <p className="mx-1 mt-2 flex items-start gap-1.5 rounded-lg bg-card p-2 text-[11px] leading-4 text-muted-foreground ring-1 ring-border">
-          <FlaskConical className="mt-0.5 size-3 shrink-0" />
-          {c(
-            "بيانات تجريبية: الخادم لا يرسل التقدّم إلى Supabase بعد.",
-            "Demo data: the backend doesn't send progress to Supabase yet.",
-          )}
-        </p>
-      )}
     </div>
-  );
-}
-
-function ResultCard({ run, onOpenReview }: { run: FactCheckRun; onOpenReview: () => void }) {
-  const { lang, t } = useI18n();
-  const c = (ar: string, en: string) => (lang === "ar" ? ar : en);
-  const decision = [...run.humanDecisions].reverse().find((d) => d.label || d.left);
-  return (
-    <section className="rounded-2xl border bg-card p-4 md:p-5">
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="text-sm font-semibold">{c("الحكم النهائي", "Final verdict")}</span>
-        <VerdictBadge verdict={run.finalVerdict ?? null} className="px-3 py-1 text-sm" />
-        <Button className="ms-auto" onClick={onOpenReview}>
-          <FileText />
-          {c("افتح المراجعة والتقرير", "Open review & report")}
-        </Button>
-      </div>
-      <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-        <div className="flex items-center gap-2">
-          <dt className="text-muted-foreground">{c("الوكيل:", "Agent:")}</dt>
-          <dd>
-            <VerdictBadge verdict={run.agentVerdict ?? null} />
-          </dd>
-        </div>
-        <div className="flex items-center gap-2">
-          <dt className="text-muted-foreground">{c("المراجع:", "Reviewer:")}</dt>
-          <dd>
-            <VerdictBadge verdict={run.reviewerVerdict ?? null} />
-          </dd>
-        </div>
-      </dl>
-      {decision && (
-        <p
-          className="mt-3 flex items-start gap-2 rounded-lg bg-primary-soft p-3 text-sm leading-6"
-          dir="auto"
-        >
-          <UserRound className="mt-1 size-4 shrink-0 text-primary" />
-          <span>
-            <strong>{c("قرار المدقق: ", "Fact-checker's decision: ")}</strong>
-            {decision.label ? t(`v.${decision.label}` as TKey) : t("v.nei")}
-            {decision.reason && <> — {decision.reason}</>}
-          </span>
-        </p>
-      )}
-      {run.needsHumanReview && (
-        <p className="mt-3 flex items-start gap-2 rounded-lg border border-verdict-missing-context/40 bg-verdict-missing-context/10 p-3 text-sm leading-6">
-          <AlertTriangle className="mt-1 size-4 shrink-0 text-verdict-missing-context" />
-          {c(
-            "يحتاج إلى مراجعة بشرية: لم يصل النظام إلى نتيجة، والقرار للمدقق.",
-            "Needs human review: the system reached no conclusion; a fact-checker decides.",
-          )}
-        </p>
-      )}
-    </section>
   );
 }
 
@@ -208,9 +135,7 @@ export function FactCheckWorkspace({
   }, [id]);
   // Follow the run as new steps and pauses arrive. (Braces matter: newer browsers make
   // scrollIntoView return a Promise, which React would take for a cleanup function.)
-  const progress = run
-    ? `${run.status}:${run.steps.map((s) => s.status + s.items.length).join()}`
-    : "";
+  const progress = run ? `${run.status}:${run.phase}:${run.pause?.id}:${run.plan ? 1 : 0}` : "";
   useEffect(() => {
     void bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [progress]);
@@ -257,7 +182,7 @@ export function FactCheckWorkspace({
                 {lang === "ar" ? MODE_NAMES[run.mode].ar : MODE_NAMES[run.mode].en}
               </span>
             )}
-            {run?.report && (
+            {run?.status === "done" && (
               <Button variant="outline" size="sm" onClick={() => setReviewOpen(true)}>
                 <FileText />
                 {c("المراجعة", "Review")}
@@ -316,24 +241,20 @@ export function FactCheckWorkspace({
                     </p>
                   )}
                 </div>
-                {run.steps.map((step) => (
-                  <StepCard
-                    key={`${step.key}-${step.status === "running"}`}
-                    step={step}
-                    defaultOpen={step.status === "running"}
-                  />
-                ))}
+                <PlanCard run={run} />
+                {(run.status === "queued" ||
+                  run.status === "running" ||
+                  run.status === "paused") && <StatusLine run={run} />}
                 {run.status === "paused" && run.pause && (
                   <PauseCard
-                    key={run.pause.kind}
+                    key={run.pause.id}
                     pause={run.pause}
                     mode={run.mode}
                     onAnswer={(a) => source.answer(run.id, a)}
-                    onModeChange={(m) => source.setMode(run.id, m)}
                   />
                 )}
                 {run.status === "done" && (
-                  <ResultCard run={run} onOpenReview={() => setReviewOpen(true)} />
+                  <VerdictCard run={run} onOpenReview={() => setReviewOpen(true)} />
                 )}
                 {run.status === "failed" && (
                   <p
@@ -350,7 +271,7 @@ export function FactCheckWorkspace({
         </main>
 
         {/* The review opens as a side sheet; the content area is too narrow for a third column */}
-        {run?.report && (
+        {run?.status === "done" && (
           <Sheet open={reviewOpen} onOpenChange={setReviewOpen}>
             <SheetContent
               side={reviewSide}

@@ -20,6 +20,8 @@ import {
   MODELS,
   MODES,
   TOOLS,
+  DEFAULT_TOOLS,
+  SWITCHABLE_TOOLS,
   type Mode,
   type StartInput,
   type ToolId,
@@ -40,7 +42,8 @@ export function Composer({
   const [text, setText] = useState(initialText);
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [tools, setTools] = useState<ToolId[]>([...TOOLS]); // all on by default (decision #12)
+  // On by default, except geolocation, which loads a large model (DEFAME DECISIONS.md #46)
+  const [tools, setTools] = useState<ToolId[]>([...DEFAULT_TOOLS]);
   const [mode, setMode] = useState<Mode>("auto"); // the default: no pauses, as in the backend
   const [model, setModel] = useState(MODELS[0]?.id ?? "");
   const [error, setError] = useState("");
@@ -184,7 +187,7 @@ export function Composer({
                       checked={tools.includes(tool)}
                       onCheckedChange={(on) => toggleTool(tool, on === true)}
                       onSelect={(e) => e.preventDefault()}
-                      disabled={tool === "web_search"}
+                      disabled={!SWITCHABLE_TOOLS.includes(tool)} // web search (with reverse image search) is always on
                     >
                       <span className="flex flex-col">
                         <span>{lang === "ar" ? TOOL_NAMES[tool].ar : TOOL_NAMES[tool].en}</span>
