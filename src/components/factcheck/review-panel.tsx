@@ -270,7 +270,9 @@ export function ReviewPanel({ run, onClose }: { run: FactCheckRun; onClose: () =
         {comments.length === 0 && (
           <p className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <MessageSquareQuote className="size-4" />
-            {c("لا ملاحظات من المراجع.", "No Reviewer comments.")}
+            {run.reviewerEnabled
+              ? c("لا ملاحظات من المراجع.", "No Reviewer comments.")
+              : c("كان المراجع متوقفًا في هذا الفحص.", "The Reviewer was off for this check.")}
           </p>
         )}
       </div>

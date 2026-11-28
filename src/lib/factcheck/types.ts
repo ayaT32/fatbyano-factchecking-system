@@ -127,7 +127,9 @@ export interface FactCheckRun {
   agentVerdict?: Verdict;
   reviewerVerdict?: Verdict;
   finalVerdict?: Verdict;
-  settledBy?: "agreement" | "human" | "unresolved";
+  /** agent = the Reviewer was off, so the agent's verdict is final (DECISIONS.md #29) */
+  settledBy?: SettledBy;
+  reviewerEnabled: boolean;
   needsHumanReview: boolean;
   sources: Source[];
   report?: { markdownPath?: string; pdfPath?: string };
@@ -145,12 +147,16 @@ export interface SessionSummary {
   createdAt: string;
 }
 
+export type SettledBy = "agreement" | "agent" | "human" | "unresolved";
+
 export interface StartInput {
   text: string;
   image?: File;
   mode: Mode;
   tools: ToolId[];
   model: string;
+  /** Run the AI Reviewer (on by default) */
+  reviewer: boolean;
 }
 
 /** Where runs come from. The screens never talk to the backend directly. */

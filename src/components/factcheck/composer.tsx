@@ -1,5 +1,15 @@
 import { useRef, useState } from "react";
-import { ArrowUp, Check, ChevronDown, ImagePlus, Loader2, Plus, Wrench, X } from "lucide-react";
+import {
+  ArrowUp,
+  Check,
+  ChevronDown,
+  ImagePlus,
+  Loader2,
+  Plus,
+  ShieldCheck,
+  Wrench,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -46,6 +56,8 @@ export function Composer({
   const [tools, setTools] = useState<ToolId[]>([...DEFAULT_TOOLS]);
   const [mode, setMode] = useState<Mode>("auto"); // the default: no pauses, as in the backend
   const [model, setModel] = useState(MODELS[0]?.id ?? "");
+  // The AI Reviewer: on by default; off = the agent's verdict is final (DECISIONS.md #29)
+  const [reviewer, setReviewer] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -77,7 +89,14 @@ export function Composer({
     setBusy(true);
     setError("");
     try {
-      await onSubmit({ text: text.trim(), mode, tools, model, ...(image ? { image } : {}) });
+      await onSubmit({
+        text: text.trim(),
+        mode,
+        tools,
+        model,
+        reviewer,
+        ...(image ? { image } : {}),
+      });
     } catch (e) {
       setError(e instanceof Error ? e.message : c("تعذر بدء الفحص.", "Could not start the check."));
       setBusy(false);
@@ -162,6 +181,25 @@ export function Composer({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64">
+              <DropdownMenuCheckboxItem
+                checked={reviewer}
+                onCheckedChange={(on) => setReviewer(on === true)}
+                onSelect={(e) => e.preventDefault()}
+              >
+                <span className="flex items-start gap-2">
+                  <ShieldCheck className="mt-0.5 size-4 text-muted-foreground" />
+                  <span className="flex flex-col">
+                    <span>{c("المراجع الذكي", "AI Reviewer")}</span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {c(
+                        "يراجع كل خطوة ويصدر حكمًا ثانيًا",
+                        "Checks each step and gives a second verdict",
+                      )}
+                    </span>
+                  </span>
+                </span>
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => fileInput.current?.click()}>
                 <ImagePlus />
                 {c("إرفاق صورة", "Attach image")}
@@ -201,6 +239,17 @@ export function Composer({
               </DropdownMenuSub>
             </DropdownMenuContent>
           </DropdownMenu>
+          {!reviewer && (
+            <button
+              type="button"
+              onClick={() => setReviewer(true)}
+              disabled={busy}
+              title={c("إعادة تشغيل المراجع", "Turn the Reviewer back on")}
+              className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-900 dark:bg-amber-950 dark:text-amber-200"
+            >
+              {c("المراجع متوقف", "Reviewer off")}
+            </button>
+          )}
           {tools.length < TOOLS.length && (
             <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
               {c(
@@ -240,6 +289,14 @@ export function Composer({
                       <span className="text-xs text-muted-foreground">
                         {lang === "ar" ? MODE_NAMES[m].hintAr : MODE_NAMES[m].hintEn}
                       </span>
+                      {!reviewer && m === "disagreement" && (
+                        <span className="text-xs text-amber-700 dark:text-amber-300">
+                          {c(
+                            "المراجع متوقف: يتوقف فقط عند «معلومات غير كافية»",
+                            "Reviewer off: only pauses at NEI",
+                          )}
+                        </span>
+                      )}
                     </span>
                   </DropdownMenuItem>
                 ))}
