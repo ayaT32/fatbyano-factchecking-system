@@ -1,20 +1,16 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Eye, Loader2, MessageCircle, ScanSearch, Send, ShieldCheck, UserRoundCog, UsersRound } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Loader2, ScanSearch, Send, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DataState, useCopy } from "@/components/desk-ui";
 import { PageHeader } from "@/components/page-header";
-import { VerdictBadge } from "@/components/verdict-badge";
 import { useClaims, useMe, useProfiles } from "@/lib/session";
 import { useI18n } from "@/lib/i18n";
-import { employeeId } from "@/lib/auth";
+import { employeeId, hasManagementRole, isManagementRole, roleNames } from "@/lib/auth";
 import { requireAdmin } from "@/lib/route-auth";
 import { pageMeta } from "@/lib/desk";
 import { supabase } from "@/integrations/supabase/client";
-import { AnalysisView } from "@/components/desk-ui";
-import type { ClaimRow } from "@/lib/session";
 import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/_authenticated/team")({
@@ -25,16 +21,14 @@ export const Route = createFileRoute("/_authenticated/team")({
 });
 
 function TeamPage() {
-  const { lang, t } = useI18n();
+  const { t } = useI18n();
   const c = useCopy();
   const { data: currentUser } = useMe();
   const claimsQuery = useClaims();
   const profilesQuery = useProfiles();
   const queryClient = useQueryClient();
-  const [selected, setSelected] = useState<ClaimRow | null>(null);
   const [changingUser, setChangingUser] = useState<string | null>(null);
   const [error, setError] = useState("");
-  const [employeeQuery, setEmployeeQuery] = useState("");
   const [chatText, setChatText] = useState("");
   const [chatMessages, setChatMessages] = useState<
     { role: "user" | "assistant"; text: string }[]
@@ -54,24 +48,10 @@ function TeamPage() {
   const roles = rolesQuery.data ?? [];
   const profileById = new Map(profiles.map((profile) => [profile.id, profile]));
   const allClaims = claimsQuery.data ?? [];
-  const adminCount = roles.filter((role) => role.role === "admin").length;
-
-  const normalizedEmployeeQuery = employeeQuery.trim().toLocaleLowerCase();
-  const filteredClaims = allClaims.filter((claim) => {
-    if (!normalizedEmployeeQuery) return true;
-    const profile = profileById.get(claim.user_id);
-    const employeeName = profile?.full_name || profile?.email || "";
-    const searchableDate = new Date(claim.created_at).toLocaleString(lang === "ar" ? "ar" : "en-GB");
-    const searchable = [
-      employeeName,
-      employeeId(claim.user_id),
-      claim.claim_text,
-      claim.verdict,
-      searchableDate,
-      claim.created_at.slice(0, 10),
-    ].join(" ").toLocaleLowerCase();
-    return searchable.includes(normalizedEmployeeQuery);
-  });
+  // People (not rows) with a management role; an account can hold both roles
+  const adminCount = new Set(
+    roles.filter((role) => isManagementRole(role.role)).map((role) => role.user_id),
+  ).size;
 
   function askActivityAssistant(event: React.FormEvent) {
     event.preventDefault();
@@ -115,21 +95,35 @@ function TeamPage() {
 
   async function changeRole(userId: string) {
     if (changingUser) return;
-    const currentRole = roles.find((role) => role.user_id === userId);
-    if (!currentRole) return;
-    if (currentRole.role === "admin" && adminCount <= 1) {
+    const userRoles = roles.filter((role) => role.user_id === userId);
+    if (!userRoles.length) return;
+    const isManager = hasManagementRole(userRoles);
+    if (isManager && adminCount <= 1) {
       setError(c("لا يمكن إزالة صلاحية آخر مدير.", "The last administrator cannot be demoted."));
       return;
     }
+    const names = roleNames(roles);
 
     setChangingUser(userId);
     setError("");
     try {
-      const { error: updateError } = await supabase
-        .from("user_roles")
-        .update({ role: currentRole.role === "admin" ? "staff" : "admin" })
-        .eq("id", currentRole.id);
-      if (updateError) throw updateError;
+      const managerRows = userRoles.filter((role) => isManagementRole(role.role));
+      const staffRows = userRoles.filter((role) => !isManagementRole(role.role));
+      // Role names differ between databases, so they are plain strings here
+      const roleTable = supabase.from("user_roles") as unknown as {
+        update: (v: { role: string }) => { eq: (k: string, v: string) => PromiseLike<{ error: unknown }> };
+        delete: () => { in: (k: string, v: string[]) => PromiseLike<{ error: unknown }> };
+      };
+      let result: { error: unknown };
+      if (isManager) {
+        // Demote: drop the management row(s), or rename the only row to the staff role
+        result = staffRows.length
+          ? await roleTable.delete().in("id", managerRows.map((r) => r.id))
+          : await roleTable.update({ role: names.staff }).eq("id", managerRows[0]!.id);
+      } else {
+        result = await roleTable.update({ role: names.manager }).eq("id", staffRows[0]!.id);
+      }
+      if (result.error) throw result.error;
       await queryClient.invalidateQueries({ queryKey: ["team-roles"] });
       await queryClient.invalidateQueries({ queryKey: ["me"] });
     } catch (reason) {
@@ -169,10 +163,7 @@ function TeamPage() {
       ) : (
         <>
           <section className="mb-10">
-            <div className="mb-4 flex items-center gap-2">
-              <UserRoundCog className="size-5 text-primary" />
-              <h2 className="text-lg font-bold text-ink">{c("صلاحيات الفريق", "Team access")}</h2>
-            </div>
+            <h2 className="mb-4 text-lg font-bold text-ink">{c("صلاحيات الفريق", "Team access")}</h2>
             <div className="overflow-x-auto rounded-2xl border border-border bg-card">
               <table className="w-full min-w-[620px] text-start text-sm">
                 <thead className="border-b bg-muted/50 text-xs text-muted-foreground">
@@ -185,7 +176,9 @@ function TeamPage() {
                 </thead>
                 <tbody className="divide-y divide-border">
                   {profiles.map((profile, index) => {
-                    const role = roles.find((item) => item.user_id === profile.id);
+                    const userRoles = roles.filter((item) => item.user_id === profile.id);
+                    const role = userRoles[0];
+                    const isManager = hasManagementRole(userRoles);
                     return (
                       <tr key={profile.id} className={index % 2 ? "bg-white" : "bg-card"}>
                         <td className="px-4 py-3">
@@ -209,7 +202,7 @@ function TeamPage() {
                           {employeeId(profile.id)}
                         </td>
                         <td className="px-4 py-3">
-                          {role?.role === "admin"
+                          {isManager
                             ? c("الإدارة", "Management")
                             : c("مدقق", "Fact-checker")}
                         </td>
@@ -222,7 +215,7 @@ function TeamPage() {
                               !role ||
                               changingUser !== null ||
                               currentUser?.user.id === profile.id ||
-                              (role.role === "admin" && adminCount <= 1)
+                              (isManager && adminCount <= 1)
                             }
                             onClick={() => void changeRole(profile.id)}
                           >
@@ -231,7 +224,7 @@ function TeamPage() {
                             ) : (
                               <ShieldCheck />
                             )}
-                            {role?.role === "admin"
+                            {isManager
                               ? c("تحويل لمدقق", "Make fact-checker")
                               : c("ترقية للإدارة", "Make management")}
                           </Button>
@@ -257,25 +250,9 @@ function TeamPage() {
           </section>
 
           <section className="mb-10">
-            <div className="grid gap-4 lg:grid-cols-[1fr_420px]">
-              <div className="rounded-2xl border border-border bg-card p-5">
-                <label className="mb-3 block text-sm font-semibold text-ink">
-                  {c("بحث في نشاط الموظفين", "Search employee activity")}
-                </label>
-                <Input
-                  value={employeeQuery}
-                  onChange={(event) => setEmployeeQuery(event.target.value)}
-                  placeholder={c(
-                    "اكتب اسم الموظف أو تاريخاً أو ادعاءً...",
-                    "Type an employee name, date, or claim...",
-                  )}
-                />
-              </div>
+            <div className="grid gap-4">
               <div className="rounded-2xl border border-border bg-ink p-5 text-white">
-                <div className="mb-3 flex items-center gap-2">
-                  <MessageCircle className="size-5 text-primary" />
-                  <h2 className="font-bold">{c("مساعد نشاط الفريق", "Team activity assistant")}</h2>
-                </div>
+                <h2 className="mb-3 font-bold">{c("مساعد نشاط الفريق", "Team activity assistant")}</h2>
                 <div className="mb-3 max-h-28 space-y-2 overflow-y-auto text-sm">
                   {!chatMessages.length ? (
                     <p className="text-white/55">
@@ -311,136 +288,18 @@ function TeamPage() {
             </div>
           </section>
 
-          <section>
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <UsersRound className="size-5 text-primary" />
-                <h2 className="text-lg font-bold text-ink">
-                  {c("سجل التحقيقات", "Investigation log")}
-                </h2>
-              </div>
-              <span className="text-xs text-muted-foreground">
-                {filteredClaims.length} {c("تحقيق", "reviews")}
-              </span>
-            </div>
-            {!filteredClaims.length ? (
-              <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-12 text-center text-sm text-muted-foreground">
-                {c(
-                  "لا توجد تحقيقات تطابق بحثك.",
-                  "No investigations match your search.",
-                )}
-              </div>
-            ) : (
-              <div className="overflow-x-auto rounded-2xl border border-border bg-card">
-                <table className="w-full min-w-[900px] text-start text-sm">
-                  <thead className="border-b bg-muted/50 text-xs text-muted-foreground">
-                    <tr>
-                      {[
-                        c("الموظف", "Employee"),
-                        t("internalId"),
-                        c("موضوع الادعاء", "Claim subject"),
-                        c("التاريخ والوقت", "Processed at"),
-                        t("verdict"),
-                        c("التقرير", "Report"),
-                      ].map((heading) => (
-                        <th key={heading} className="px-4 py-3 text-start font-medium">
-                          {heading}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {filteredClaims.map((claim, index) => {
-                      const profile = profileById.get(claim.user_id);
-                      return (
-                        <tr key={claim.id} className={index % 2 ? "bg-white" : "bg-card"}>
-                          <td className="whitespace-nowrap px-4 py-3">
-                            <span className="inline-flex items-center gap-2">
-                              <span className="grid size-8 place-items-center rounded-full bg-ink/5 text-xs font-bold text-ink">
-                                {(profile?.full_name || profile?.email || "?")
-                                  .slice(0, 1)
-                                  .toLocaleUpperCase()}
-                              </span>
-                              {profile?.full_name ||
-                                profile?.email ||
-                                c("عضو الفريق", "Team member")}
-                            </span>
-                          </td>
-                          <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted-foreground">
-                            {employeeId(claim.user_id)}
-                          </td>
-                          <td className="max-w-[260px] px-4 py-3">
-                            <p className="line-clamp-2 leading-6" dir="auto">
-                              {claim.claim_text}
-                            </p>
-                          </td>
-                          <td className="whitespace-nowrap px-4 py-3 text-xs text-muted-foreground">
-                            {new Date(claim.created_at).toLocaleString(
-                              lang === "ar" ? "ar" : "en-GB",
-                            )}
-                          </td>
-                          <td className="px-4 py-3">
-                            <VerdictBadge verdict={claim.verdict} />
-                          </td>
-                          <td className="px-4 py-3">
-                            <Button type="button" size="sm" onClick={() => setSelected(claim)}>
-                              <Eye />
-                              {c("عرض التقرير الكامل", "View full report")}
-                            </Button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
+          <p className="rounded-2xl border border-dashed border-border bg-card px-6 py-8 text-center text-sm text-muted-foreground">
+            {c(
+              "سجل الادعاءات والتقارير والبحث فيها انتقل إلى صفحة الإدارة.",
+              "The claims and reports log, with search, is now on the Management page.",
+            )}{" "}
+            <Link to="/management" className="font-semibold text-ink underline">
+              {c("افتح الإدارة", "Open Management")}
+            </Link>
+          </p>
         </>
       )}
 
-      <Dialog
-        open={selected !== null}
-        onOpenChange={(open) => {
-          if (!open) setSelected(null);
-        }}
-      >
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="pe-8 leading-8" dir="auto">
-              {selected?.claim_text}
-            </DialogTitle>
-          </DialogHeader>
-          {selected && (
-            <div>
-              <div className="mb-6 flex flex-wrap items-center gap-3 border-b pb-5">
-                <VerdictBadge verdict={selected.verdict} />
-                <span className="text-sm text-muted-foreground">
-                  {new Date(selected.created_at).toLocaleString(lang === "ar" ? "ar" : "en-GB")}
-                </span>
-                {selected.source_url && (
-                  <a
-                    className="break-all text-sm text-primary underline"
-                    href={selected.source_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {selected.source_url}
-                  </a>
-                )}
-              </div>
-              <AnalysisView claim={selected} />
-              <div className="mt-8 border-t-2 border-primary/40 bg-primary/5 px-4 py-3 text-center text-xs font-semibold tracking-wide text-ink">
-                {c("نسخة مراجعة — الموظف المسؤول", "AUDIT COPY — RESPONSIBLE EMPLOYEE")}:{" "}
-                {profileById.get(selected.user_id)?.full_name ||
-                  profileById.get(selected.user_id)?.email ||
-                  c("عضو الفريق", "Team member")}{" "}
-                · {employeeId(selected.user_id)}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

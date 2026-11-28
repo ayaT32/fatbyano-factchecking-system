@@ -12,21 +12,29 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AuthenticatedAnalyticsRouteImport } from './routes/_authenticated/analytics'
 import { Route as AuthenticatedCheckRouteImport } from './routes/_authenticated/check'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedGeospatialRouteImport } from './routes/_authenticated/geospatial'
+import { Route as AuthenticatedInvestigateRouteImport } from './routes/_authenticated/investigate'
+import { Route as AuthenticatedManagementRouteImport } from './routes/_authenticated/management'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedTeamRouteImport } from './routes/_authenticated/team'
 import { Route as AuthenticatedTrendsRouteImport } from './routes/_authenticated/trends'
 import { Route as ApiInvestigationChatRouteImport } from './routes/api/investigation-chat'
+import { Route as ManagementLoginRouteImport } from './routes/management.login'
+import { Route as PreviewCheckRouteImport } from './routes/preview.check'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedCheckIndexRouteImport } from './routes/_authenticated/check.index'
 import { Route as AuthenticatedCheckIdRouteImport } from './routes/_authenticated/check.$id'
 import { Route as AuthenticatedHistoryIndexRouteImport } from './routes/_authenticated/history.index'
 import { Route as AuthenticatedHistoryIdRouteImport } from './routes/_authenticated/history.$id'
+import { Route as AuthenticatedInvestigateIndexRouteImport } from './routes/_authenticated/investigate.index'
+import { Route as AuthenticatedInvestigateIdRouteImport } from './routes/_authenticated/investigate.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,6 +48,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const McpRoute = McpRouteImport.update({
@@ -73,6 +86,22 @@ const AuthenticatedGeospatialRoute = AuthenticatedGeospatialRouteImport.update({
   path: '/geospatial',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInvestigateRoute =
+  AuthenticatedInvestigateRouteImport.update({
+    id: '/investigate',
+    path: '/investigate',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedManagementRoute = AuthenticatedManagementRouteImport.update({
+  id: '/management',
+  path: '/management',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -91,6 +120,16 @@ const AuthenticatedTrendsRoute = AuthenticatedTrendsRouteImport.update({
 const ApiInvestigationChatRoute = ApiInvestigationChatRouteImport.update({
   id: '/api/investigation-chat',
   path: '/api/investigation-chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ManagementLoginRoute = ManagementLoginRouteImport.update({
+  id: '/management/login',
+  path: '/management/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewCheckRoute = PreviewCheckRouteImport.update({
+  id: '/preview/check',
+  path: '/preview/check',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
@@ -119,132 +158,193 @@ const AuthenticatedHistoryIdRoute = AuthenticatedHistoryIdRouteImport.update({
   path: '/history/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedInvestigateIndexRoute =
+  AuthenticatedInvestigateIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedInvestigateRoute,
+  } as any)
+const AuthenticatedInvestigateIdRoute =
+  AuthenticatedInvestigateIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedInvestigateRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/check': typeof AuthenticatedCheckRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/geospatial': typeof AuthenticatedGeospatialRoute
+  '/investigate': typeof AuthenticatedInvestigateRouteWithChildren
+  '/management': typeof AuthenticatedManagementRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/trends': typeof AuthenticatedTrendsRoute
   '/api/investigation-chat': typeof ApiInvestigationChatRoute
+  '/management/login': typeof ManagementLoginRoute
+  '/preview/check': typeof PreviewCheckRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/check/$id': typeof AuthenticatedCheckIdRoute
   '/history/$id': typeof AuthenticatedHistoryIdRoute
+  '/investigate/$id': typeof AuthenticatedInvestigateIdRoute
   '/check/': typeof AuthenticatedCheckIndexRoute
   '/history/': typeof AuthenticatedHistoryIndexRoute
+  '/investigate/': typeof AuthenticatedInvestigateIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/analytics': typeof AuthenticatedAnalyticsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/geospatial': typeof AuthenticatedGeospatialRoute
+  '/management': typeof AuthenticatedManagementRoute
+  '/profile': typeof AuthenticatedProfileRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/team': typeof AuthenticatedTeamRoute
   '/trends': typeof AuthenticatedTrendsRoute
   '/api/investigation-chat': typeof ApiInvestigationChatRoute
+  '/management/login': typeof ManagementLoginRoute
+  '/preview/check': typeof PreviewCheckRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/check/$id': typeof AuthenticatedCheckIdRoute
   '/history/$id': typeof AuthenticatedHistoryIdRoute
+  '/investigate/$id': typeof AuthenticatedInvestigateIdRoute
   '/check': typeof AuthenticatedCheckIndexRoute
   '/history': typeof AuthenticatedHistoryIndexRoute
+  '/investigate': typeof AuthenticatedInvestigateIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/mcp': typeof McpRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/analytics': typeof AuthenticatedAnalyticsRoute
   '/_authenticated/check': typeof AuthenticatedCheckRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/geospatial': typeof AuthenticatedGeospatialRoute
+  '/_authenticated/investigate': typeof AuthenticatedInvestigateRouteWithChildren
+  '/_authenticated/management': typeof AuthenticatedManagementRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/team': typeof AuthenticatedTeamRoute
   '/_authenticated/trends': typeof AuthenticatedTrendsRoute
   '/api/investigation-chat': typeof ApiInvestigationChatRoute
+  '/management/login': typeof ManagementLoginRoute
+  '/preview/check': typeof PreviewCheckRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/check/$id': typeof AuthenticatedCheckIdRoute
   '/_authenticated/history/$id': typeof AuthenticatedHistoryIdRoute
+  '/_authenticated/investigate/$id': typeof AuthenticatedInvestigateIdRoute
   '/_authenticated/check/': typeof AuthenticatedCheckIndexRoute
   '/_authenticated/history/': typeof AuthenticatedHistoryIndexRoute
+  '/_authenticated/investigate/': typeof AuthenticatedInvestigateIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
+    | '/how-it-works'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/analytics'
     | '/check'
     | '/dashboard'
     | '/geospatial'
+    | '/investigate'
+    | '/management'
+    | '/profile'
     | '/reports'
     | '/team'
     | '/trends'
     | '/api/investigation-chat'
+    | '/management/login'
+    | '/preview/check'
     | '/.lovable/oauth/consent'
     | '/check/$id'
     | '/history/$id'
+    | '/investigate/$id'
     | '/check/'
     | '/history/'
+    | '/investigate/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
+    | '/how-it-works'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/analytics'
     | '/dashboard'
     | '/geospatial'
+    | '/management'
+    | '/profile'
     | '/reports'
     | '/team'
     | '/trends'
     | '/api/investigation-chat'
+    | '/management/login'
+    | '/preview/check'
     | '/.lovable/oauth/consent'
     | '/check/$id'
     | '/history/$id'
+    | '/investigate/$id'
     | '/check'
     | '/history'
+    | '/investigate'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/how-it-works'
     | '/mcp'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/analytics'
     | '/_authenticated/check'
     | '/_authenticated/dashboard'
     | '/_authenticated/geospatial'
+    | '/_authenticated/investigate'
+    | '/_authenticated/management'
+    | '/_authenticated/profile'
     | '/_authenticated/reports'
     | '/_authenticated/team'
     | '/_authenticated/trends'
     | '/api/investigation-chat'
+    | '/management/login'
+    | '/preview/check'
     | '/.lovable/oauth/consent'
     | '/_authenticated/check/$id'
     | '/_authenticated/history/$id'
+    | '/_authenticated/investigate/$id'
     | '/_authenticated/check/'
     | '/_authenticated/history/'
+    | '/_authenticated/investigate/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   McpRoute: typeof McpRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   ApiInvestigationChatRoute: typeof ApiInvestigationChatRoute
+  ManagementLoginRoute: typeof ManagementLoginRoute
+  PreviewCheckRoute: typeof PreviewCheckRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
@@ -269,6 +369,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mcp': {
@@ -313,6 +420,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGeospatialRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/investigate': {
+      id: '/_authenticated/investigate'
+      path: '/investigate'
+      fullPath: '/investigate'
+      preLoaderRoute: typeof AuthenticatedInvestigateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/management': {
+      id: '/_authenticated/management'
+      path: '/management'
+      fullPath: '/management'
+      preLoaderRoute: typeof AuthenticatedManagementRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/reports': {
       id: '/_authenticated/reports'
       path: '/reports'
@@ -339,6 +467,20 @@ declare module '@tanstack/react-router' {
       path: '/api/investigation-chat'
       fullPath: '/api/investigation-chat'
       preLoaderRoute: typeof ApiInvestigationChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/management/login': {
+      id: '/management/login'
+      path: '/management/login'
+      fullPath: '/management/login'
+      preLoaderRoute: typeof ManagementLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview/check': {
+      id: '/preview/check'
+      path: '/preview/check'
+      fullPath: '/preview/check'
+      preLoaderRoute: typeof PreviewCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.lovable/oauth/consent': {
@@ -376,6 +518,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHistoryIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/investigate/': {
+      id: '/_authenticated/investigate/'
+      path: '/'
+      fullPath: '/investigate/'
+      preLoaderRoute: typeof AuthenticatedInvestigateIndexRouteImport
+      parentRoute: typeof AuthenticatedInvestigateRoute
+    }
+    '/_authenticated/investigate/$id': {
+      id: '/_authenticated/investigate/$id'
+      path: '/$id'
+      fullPath: '/investigate/$id'
+      preLoaderRoute: typeof AuthenticatedInvestigateIdRouteImport
+      parentRoute: typeof AuthenticatedInvestigateRoute
+    }
   }
 }
 
@@ -392,11 +548,30 @@ const AuthenticatedCheckRouteChildren: AuthenticatedCheckRouteChildren = {
 const AuthenticatedCheckRouteWithChildren =
   AuthenticatedCheckRoute._addFileChildren(AuthenticatedCheckRouteChildren)
 
+interface AuthenticatedInvestigateRouteChildren {
+  AuthenticatedInvestigateIdRoute: typeof AuthenticatedInvestigateIdRoute
+  AuthenticatedInvestigateIndexRoute: typeof AuthenticatedInvestigateIndexRoute
+}
+
+const AuthenticatedInvestigateRouteChildren: AuthenticatedInvestigateRouteChildren =
+  {
+    AuthenticatedInvestigateIdRoute: AuthenticatedInvestigateIdRoute,
+    AuthenticatedInvestigateIndexRoute: AuthenticatedInvestigateIndexRoute,
+  }
+
+const AuthenticatedInvestigateRouteWithChildren =
+  AuthenticatedInvestigateRoute._addFileChildren(
+    AuthenticatedInvestigateRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAnalyticsRoute: typeof AuthenticatedAnalyticsRoute
   AuthenticatedCheckRoute: typeof AuthenticatedCheckRouteWithChildren
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedGeospatialRoute: typeof AuthenticatedGeospatialRoute
+  AuthenticatedInvestigateRoute: typeof AuthenticatedInvestigateRouteWithChildren
+  AuthenticatedManagementRoute: typeof AuthenticatedManagementRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedTeamRoute: typeof AuthenticatedTeamRoute
   AuthenticatedTrendsRoute: typeof AuthenticatedTrendsRoute
@@ -409,6 +584,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCheckRoute: AuthenticatedCheckRouteWithChildren,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedGeospatialRoute: AuthenticatedGeospatialRoute,
+  AuthenticatedInvestigateRoute: AuthenticatedInvestigateRouteWithChildren,
+  AuthenticatedManagementRoute: AuthenticatedManagementRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedTeamRoute: AuthenticatedTeamRoute,
   AuthenticatedTrendsRoute: AuthenticatedTrendsRoute,
@@ -423,10 +601,13 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  HowItWorksRoute: HowItWorksRoute,
   McpRoute: McpRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
   ApiInvestigationChatRoute: ApiInvestigationChatRoute,
+  ManagementLoginRoute: ManagementLoginRoute,
+  PreviewCheckRoute: PreviewCheckRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport

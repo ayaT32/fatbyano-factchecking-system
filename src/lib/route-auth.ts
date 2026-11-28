@@ -1,5 +1,6 @@
 import { redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
+import { hasManagementRole } from "@/lib/auth";
 
 export async function requireAdmin() {
   const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -11,5 +12,5 @@ export async function requireAdmin() {
     .select("role")
     .eq("user_id", userData.user.id);
   if (roleError) throw roleError;
-  if (!(roles ?? []).some((role) => role.role === "admin")) throw redirect({ to: "/dashboard" });
+  if (!hasManagementRole(roles)) throw redirect({ to: "/dashboard" });
 }

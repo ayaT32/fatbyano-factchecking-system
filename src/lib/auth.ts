@@ -22,6 +22,29 @@ export function isStrongPassword(password: string): boolean {
   return Object.values(getPasswordRequirements(password)).every(Boolean);
 }
 
+/**
+ * Role names. Databases set up from main use `admin` / `staff`; the fact-check archive
+ * migration renames them to `manager` / `fact_checker`. Both spellings are accepted so the
+ * app works against either database.
+ */
+const MANAGEMENT_ROLES = new Set(["admin", "manager"]);
+
+export function isManagementRole(role: string | null | undefined): boolean {
+  return !!role && MANAGEMENT_ROLES.has(role);
+}
+
+export function hasManagementRole(roles: { role: string }[] | null | undefined): boolean {
+  return (roles ?? []).some((r) => isManagementRole(r.role));
+}
+
+/** The role names this database uses, judged from the rows already in it. */
+export function roleNames(roles: { role: string }[]): { manager: string; staff: string } {
+  const renamed = roles.some((r) => r.role === "manager" || r.role === "fact_checker");
+  return renamed
+    ? { manager: "manager", staff: "fact_checker" }
+    : { manager: "admin", staff: "staff" };
+}
+
 export function employeeId(userId: string): string {
   return `FTB-${userId.replaceAll("-", "").slice(0, 8).toUpperCase()}`;
 }

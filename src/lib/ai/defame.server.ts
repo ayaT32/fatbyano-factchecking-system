@@ -127,17 +127,20 @@ export function mapDefameVerdict(label: string | null | undefined) {
     case "FALSE":
     case "REFUTED":
       return "false";
-    case "MISLEADING":
     case "ALTERED":
+      return "altered";
+    case "MISLEADING":
+    case "CHERRY_PICKING":
+      return "misleading";
     case "MISSING_CONTEXT":
     case "OUT_OF_CONTEXT":
     case "MISCAPTIONED":
-    case "CHERRY_PICKING":
-      return "misleading";
-    case "CONFLICTING":
-      return "partly_true";
+      return "missing_context";
+    case "SATIRE":
+      return "satire";
     default:
-      return "unverifiable";
+      // NOT_ENOUGH_INFORMATION, CONFLICTING, refusals and unknown values
+      return "nei";
   }
 }
 
@@ -157,10 +160,10 @@ export function normalizeDefameResult(
     status.content.verdict != null
       ? mapDefameVerdict(status.content.verdict)
       : uniqueVerdicts.size === 1
-        ? (verdicts[0] ?? "unverifiable")
+        ? (verdicts[0] ?? "nei")
         : uniqueVerdicts.has("true") && uniqueVerdicts.has("false")
-          ? "partly_true"
-          : "unverifiable";
+          ? "misleading" // a mix of accurate and inaccurate claims (Fatabyyano's definition)
+          : "nei";
   const summary = sub_claims
     .map((claim) => [claim.statement, claim.explanation].filter(Boolean).join("\n"))
     .join("\n\n");

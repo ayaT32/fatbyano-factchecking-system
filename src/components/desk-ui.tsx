@@ -1,4 +1,4 @@
-import { AlertCircle, FileSearch, Loader2, Search } from "lucide-react";
+import { AlertCircle, Loader2, Search } from "lucide-react";
 import { useI18n, VERDICTS, type TKey } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ export function DataState({ loading, error, empty, retry }: { loading?: boolean;
   const c = useCopy();
   if (loading) return <div role="status" className="flex min-h-48 items-center justify-center gap-2 text-muted-foreground"><Loader2 className="size-5 animate-spin motion-reduce:animate-none" />{c("جارٍ التحميل…", "Loading…")}</div>;
   if (error) return <div role="alert" className="flex min-h-48 flex-col items-center justify-center gap-3 text-destructive"><AlertCircle /><p>{error instanceof Error ? error.message : c("تعذر تحميل البيانات", "Could not load data")}</p><Button variant="outline" onClick={retry}>{c("إعادة المحاولة", "Try again")}</Button></div>;
-  return <div className="flex min-h-48 flex-col items-center justify-center gap-3 text-center text-muted-foreground"><FileSearch className="size-9 text-primary/60" /><p>{empty}</p></div>;
+  return <div className="flex min-h-48 flex-col items-center justify-center gap-3 text-center text-muted-foreground"><p>{empty}</p></div>;
 }
 
 export function ClaimFilters({ search, setSearch, verdict, setVerdict }: { search: string; setSearch: (s: string) => void; verdict: string; setVerdict: (s: string) => void }) {

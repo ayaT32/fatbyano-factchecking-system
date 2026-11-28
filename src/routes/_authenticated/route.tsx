@@ -4,9 +4,13 @@ import { AppShell } from "@/components/app-shell";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
-  beforeLoad: async () => {
+  beforeLoad: async ({ location }) => {
     const { data } = await supabase.auth.getUser();
-    if (!data.user) throw redirect({ to: "/auth" });
+    if (!data.user) {
+      // The management area has its own sign-in page
+      if (location.pathname.startsWith("/management")) throw redirect({ to: "/management/login" });
+      throw redirect({ to: "/auth" });
+    }
   },
   component: () => (
     <AppShell>

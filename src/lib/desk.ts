@@ -32,7 +32,7 @@ export function reportBody(claim: ClaimRow, lang: "ar" | "en") {
   return [
     "Fattabyno",
     claim.claim_text,
-    `${claim.verdict ?? "unverifiable"}${confidence}`,
+    `${claim.verdict ?? "nei"}${confidence}`,
     lang === "ar" ? a.summary_ar || claim.summary : a.summary_en || claim.summary,
     ...a.sub_claims.map((c) => `${c.statement}\n${c.verdict}\n${c.explanation}`),
     a.red_flags.join("\n"),
@@ -49,5 +49,5 @@ export function reportBody(claim: ClaimRow, lang: "ar" | "en") {
 export function summariseClaims(claims: ClaimRow[]) {
   const checked = claims.filter(c => c.status === "checked");
   const confidence = checked.filter(c => c.confidence !== null);
-  return { total: claims.length, checked: checked.length, flagged: checked.filter(c => c.verdict === "false" || c.verdict === "misleading").length, average: confidence.length ? Math.round(confidence.reduce((n,c) => n + (c.confidence ?? 0),0) / confidence.length) : null };
+  return { total: claims.length, checked: checked.length, flagged: checked.filter(c => ["false", "altered", "misleading", "missing_context"].includes(c.verdict ?? "")).length, average: confidence.length ? Math.round(confidence.reduce((n,c) => n + (c.confidence ?? 0),0) / confidence.length) : null };
 }

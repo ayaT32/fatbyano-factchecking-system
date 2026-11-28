@@ -2,13 +2,16 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   BarChart3,
+  Briefcase,
   ChevronDown,
   FileText,
   Flame,
   History,
   LayoutDashboard,
   LogOut,
+  MessagesSquare,
   ScanSearch,
+  UserRound,
   Users,
   Languages,
 } from "lucide-react";
@@ -35,9 +38,9 @@ export function Logo({ light }: { light?: boolean }) {
       className="group flex items-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
     >
       <img
-        src="/fattabyyano-logo.png"
+        src={light ? "/fattabyyano-logo-light.png" : "/fattabyyano-logo-dark.png"}
         alt=""
-        className="h-10 w-auto max-w-28 shrink-0 rounded-md bg-white object-contain transition-transform group-hover:scale-[1.02]"
+        className="h-9 w-auto max-w-28 shrink-0 object-contain transition-transform group-hover:scale-[1.03]"
       />
       <div className="leading-tight">
         <p
@@ -70,17 +73,21 @@ export function LangSwitch({ light }: { light?: boolean }) {
 }
 
 export function AppShell({ children }: { children: ReactNode }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { data: me } = useMe();
   const navigate = useNavigate();
   const qc = useQueryClient();
 
   const items = [
     ...(me?.isAdmin
-      ? [{ to: "/team", label: t("teamActivity"), icon: Users }]
+      ? [
+          { to: "/management", label: t("management"), icon: Briefcase },
+          { to: "/team", label: t("teamActivity"), icon: Users },
+        ]
       : [{ to: "/dashboard", label: t("dashboard"), icon: LayoutDashboard }]),
     ...(!me?.isAdmin ? [{ to: "/trends", label: t("trends"), icon: Flame }] : []),
     { to: "/check", label: t("check"), icon: ScanSearch },
+    { to: "/investigate", label: t("investigate"), icon: MessagesSquare },
     { to: "/history", label: me?.isAdmin ? t("masterDatabase") : t("history"), icon: History },
     { to: "/reports", label: t("reports"), icon: FileText },
     ...(me?.isAdmin ? [{ to: "/analytics", label: t("analytics"), icon: BarChart3 }] : []),
@@ -102,12 +109,13 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link
               key={it.to}
               to={it.to}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              className="group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               activeProps={{
-                className: "!bg-sidebar-primary !text-sidebar-primary-foreground font-semibold shadow-sm",
+                className:
+                  "!bg-sidebar-primary !text-sidebar-primary-foreground font-semibold shadow-sm",
               }}
             >
-              <it.icon className="size-4" />
+              <it.icon className="size-4 group-data-[status=active]:text-ink" />
               {it.label}
             </Link>
           ))}
@@ -139,6 +147,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                   {t("internalId")}: {employeeId(me.user.id)}
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/profile">
+                    <UserRound />
+                    {lang === "ar" ? "الملف الشخصي" : "Profile"}
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => void signOut()}>
                   <LogOut />
                   {t("signOut")}

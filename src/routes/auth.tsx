@@ -1,6 +1,6 @@
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useRef, useState } from "react";
-import { Check, ShieldCheck } from "lucide-react";
+import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
@@ -9,7 +9,12 @@ import { Logo, LangSwitch } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { getPasswordRequirements, isStrongPassword, type PasswordRequirement } from "@/lib/auth";
+import {
+  getPasswordRequirements,
+  hasManagementRole,
+  isStrongPassword,
+  type PasswordRequirement,
+} from "@/lib/auth";
 import { oauthReturnPath } from "@/lib/oauth-return-path";
 
 export const Route = createFileRoute("/auth")({
@@ -43,7 +48,7 @@ export const Route = createFileRoute("/auth")({
         .select("role")
         .eq("user_id", data.user.id);
       if (error) throw error;
-      throw redirect({ to: roles?.some((role) => role.role === "admin") ? "/team" : "/dashboard" });
+      throw redirect({ to: hasManagementRole(roles) ? "/team" : "/dashboard" });
     }
   },
   component: AuthPage,
@@ -78,7 +83,7 @@ function AuthPage() {
           .select("role")
           .eq("user_id", data.user.id);
         if (roleError) throw roleError;
-        navigate({ to: roles?.some((role) => role.role === "admin") ? "/team" : "/dashboard" });
+        navigate({ to: hasManagementRole(roles) ? "/team" : "/dashboard" });
       } else {
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -136,10 +141,7 @@ function AuthPage() {
           <Logo />
         </div>
         <section className="overflow-hidden rounded-3xl bg-ink p-6 text-white shadow-2xl shadow-ink/20 sm:p-9">
-          <div className="mb-7 flex items-center gap-3">
-            <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-primary/15 text-primary">
-              <ShieldCheck className="size-5" />
-            </span>
+          <div className="mb-7">
             <div>
               <p className="text-xs font-semibold tracking-wide text-white/55">
                 {lang === "ar" ? "مساحة عمل خاصة" : "PRIVATE WORKSPACE"}

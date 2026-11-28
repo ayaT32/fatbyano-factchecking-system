@@ -114,12 +114,9 @@ function GeospatialPage() {
       />
       <div className="grid gap-8 lg:grid-cols-2">
         <section className="sheet space-y-5 border-t-4 border-primary p-6">
-          <div className="flex items-center gap-3">
-            <MapPin className="size-6 text-primary" />
-            <h2 className="text-xl font-semibold">
-              {c("تحليل موقع صورة", "Image location analysis")}
-            </h2>
-          </div>
+          <h2 className="text-xl font-semibold">
+            {c("تحليل موقع صورة", "Image location analysis")}
+          </h2>
           <p className="text-sm leading-6 text-muted-foreground">
             {c(
               "ارفع صورة لتحليل موقعها الجغرافي.",
@@ -162,10 +159,7 @@ function GeospatialPage() {
         </section>
 
         <section className="sheet space-y-5 border-t-4 border-primary p-6">
-          <div className="flex items-center gap-3">
-            <Search className="size-6 text-primary" />
-            <h2 className="text-xl font-semibold">{c("البحث عن عنوان", "Address lookup")}</h2>
-          </div>
+          <h2 className="text-xl font-semibold">{c("البحث عن عنوان", "Address lookup")}</h2>
           <p className="text-sm leading-6 text-muted-foreground">
             {c(
               "أدخل عنواناً للحصول على معلومات الموقع الجغرافي.",

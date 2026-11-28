@@ -108,7 +108,12 @@ export function InvestigationWorkspace(props: Props) {
   useEffect(() => {
     if (props.start && props.id && !started.current) {
       started.current = true;
-      void navigate({ to: "/check/$id", params: { id: props.id }, search: {}, replace: true });
+      void navigate({
+        to: "/investigate/$id",
+        params: { id: props.id },
+        search: {},
+        replace: true,
+      });
       void regenerate();
     }
   }, [props.start, props.id, navigate, regenerate]);
@@ -121,7 +126,7 @@ export function InvestigationWorkspace(props: Props) {
         data: { title: c("تحقيق جديد", "New investigation"), enabledTools: tools },
       });
       await qc.invalidateQueries({ queryKey: ["investigations"] });
-      await navigate({ to: "/check/$id", params: { id: chat.id }, search: {} });
+      await navigate({ to: "/investigate/$id", params: { id: chat.id }, search: {} });
     } catch (e) {
       setLocalError(e instanceof Error ? e.message : "Could not create investigation.");
     } finally {
@@ -176,7 +181,11 @@ export function InvestigationWorkspace(props: Props) {
           data: { title: prompt.slice(0, 100), enabledTools: tools, firstMessage },
         });
         await qc.invalidateQueries({ queryKey: ["investigations"] });
-        await navigate({ to: "/check/$id", params: { id: chat.id }, search: { start: true } });
+        await navigate({
+          to: "/investigate/$id",
+          params: { id: chat.id },
+          search: { start: true },
+        });
       } else {
         void sendMessage({ text: prompt, ...(attachment ? { files: [attachment] } : {}) });
         setText("");
@@ -224,7 +233,7 @@ export function InvestigationWorkspace(props: Props) {
               {history.data?.map((chat) => (
                 <Link
                   key={chat.id}
-                  to="/check/$id"
+                  to="/investigate/$id"
                   params={{ id: chat.id }}
                   search={{}}
                   aria-disabled={busy}
@@ -277,7 +286,7 @@ export function InvestigationWorkspace(props: Props) {
             {history.data?.slice(0, 12).map((chat) => (
               <Link
                 className="max-w-40 shrink-0 truncate rounded-md bg-card px-3 py-2 text-xs"
-                to="/check/$id"
+                to="/investigate/$id"
                 params={{ id: chat.id }}
                 search={{}}
                 key={chat.id}
@@ -293,9 +302,6 @@ export function InvestigationWorkspace(props: Props) {
             <ConversationContent className="mx-auto w-full max-w-3xl gap-7 px-4 py-8 md:px-8">
               {!messages.length && (
                 <div className="flex min-h-56 flex-col items-center justify-center py-8 text-center">
-                  <div className="mb-5 grid size-14 place-items-center rounded-2xl bg-primary-soft text-3xl font-bold text-primary">
-                    ف
-                  </div>
                   <h2 className="text-2xl font-semibold">
                     {c("ما الذي نتحقق منه اليوم؟", "What are we verifying today?")}
                   </h2>
@@ -364,9 +370,6 @@ export function InvestigationWorkspace(props: Props) {
                   >
                     {message.role === "assistant" && (
                       <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-                        <span className="grid size-6 place-items-center rounded-md bg-primary-soft text-primary">
-                          ف
-                        </span>
                         {c("فتبينوا", "Fattabyno")}
                       </span>
                     )}
@@ -560,9 +563,9 @@ export function InvestigationWorkspace(props: Props) {
                           <span>
                             <span className="flex items-center gap-2 text-sm font-medium">
                               {tool === "manipulation" ? (
-                                <ScanEye className="size-4" />
+                                <ScanEye className="size-4 text-ink" />
                               ) : (
-                                <MapPin className="size-4" />
+                                <MapPin className="size-4 text-ink" />
                               )}
                               {toolNames[tool]}
                             </span>

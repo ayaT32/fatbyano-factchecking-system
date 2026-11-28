@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { hasManagementRole } from "@/lib/auth";
 
 export function useMe() {
   return useQuery({
@@ -16,7 +17,7 @@ export function useMe() {
         ]);
       if (profileError) throw profileError;
       if (roleError) throw roleError;
-      const isAdmin = !!roles?.some((r) => r.role === "admin");
+      const isAdmin = hasManagementRole(roles);
       return { user, profile, isAdmin };
     },
   });

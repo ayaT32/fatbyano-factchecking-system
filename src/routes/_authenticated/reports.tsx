@@ -121,8 +121,7 @@ function ReportsPage() {
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {rows.map((r) => (
             <article key={r.id} className="flex min-w-0 flex-col rounded-lg border bg-card p-5">
-              <div className="mb-5 flex items-center justify-between gap-3">
-                <FileText className="size-6 text-primary" />
+              <div className="mb-5">
                 <VerdictBadge verdict={r.verdict} />
               </div>
               <h2 className="mb-3 line-clamp-2 text-base font-semibold leading-7" dir="auto">
