@@ -87,9 +87,11 @@ export function StatusLine({ run }: { run: FactCheckRun }) {
     return () => clearInterval(t);
   }, []);
   const queued = run.status === "queued";
-  const current = queued ? -1 : PHASE_ORDER.indexOf(run.phase ?? "planning");
+  // Without the Reviewer there is no reviewing phase (DECISIONS.md #30)
+  const phases = run.reviewerEnabled ? PHASE_ORDER : PHASE_ORDER.filter((p) => p !== "reviewing");
+  const current = queued ? -1 : phases.indexOf(run.phase ?? "planning");
   const waiting = run.status === "paused";
-  const currentName = current >= 0 ? PHASE_STEP_NAMES[PHASE_ORDER[current]!] : undefined;
+  const currentName = current >= 0 ? PHASE_STEP_NAMES[phases[current]!] : undefined;
   const headline = queued
     ? c("في قائمة الانتظار", "In the queue")
     : currentName
@@ -123,7 +125,7 @@ export function StatusLine({ run }: { run: FactCheckRun }) {
       </CollapsibleTrigger>
       <CollapsibleContent>
         <ul className="ms-2 mt-1 space-y-2 border-s ps-4">
-          {PHASE_ORDER.map((phase, i) => {
+          {phases.map((phase, i) => {
             const name = PHASE_STEP_NAMES[phase];
             const state = i < current ? "done" : i === current ? "current" : "todo";
             return (
@@ -315,6 +317,7 @@ export function VerdictCard({
   }
   const settled = {
     agreement: c("اتفق الوكيل والمراجع", "The agent and the Reviewer agreed"),
+    agent: c("قرره الوكيل (المراجع متوقف)", "Decided by the agent (Reviewer off)"),
     human: c("قرره المدقق", "Decided by the fact-checker"),
     unresolved: c("لم يُحسم: يحتاج إلى مدقق", "Unresolved: needs a fact-checker"),
   };

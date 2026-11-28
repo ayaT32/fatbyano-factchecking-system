@@ -7,6 +7,7 @@ import {
   ImagePlus,
   Loader2,
   Plus,
+  ShieldCheck,
   Wrench,
   X,
 } from "lucide-react";
@@ -57,6 +58,8 @@ export function Composer({
   const [mode, setMode] = useState<Mode>("auto"); // the default: no pauses, as in the backend
   const [model, setModel] = useState(MODELS[0]?.id ?? "");
   const [claimDate, setClaimDate] = useState(""); // YYYY-MM-DD, optional
+  // The AI Reviewer: on by default; off = the agent's verdict is final (DECISIONS.md #30)
+  const [reviewer, setReviewer] = useState(true);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -95,6 +98,7 @@ export function Composer({
         mode,
         tools,
         model,
+        reviewer,
         ...(image ? { image } : {}),
         ...(claimDate ? { claimDate } : {}),
       });
@@ -182,6 +186,25 @@ export function Composer({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-64">
+              <DropdownMenuCheckboxItem
+                checked={reviewer}
+                onCheckedChange={(on) => setReviewer(on === true)}
+                onSelect={(e) => e.preventDefault()}
+              >
+                <span className="flex items-start gap-2">
+                  <ShieldCheck className="mt-0.5 size-4 text-ink" />
+                  <span className="flex flex-col">
+                    <span>{c("المراجع الذكي", "AI Reviewer")}</span>
+                    <span className="text-[11px] text-muted-foreground">
+                      {c(
+                        "يراجع كل خطوة ويصدر حكمًا ثانيًا",
+                        "Checks each step and gives a second verdict",
+                      )}
+                    </span>
+                  </span>
+                </span>
+              </DropdownMenuCheckboxItem>
+              <DropdownMenuSeparator />
               <DropdownMenuItem onSelect={() => fileInput.current?.click()}>
                 <ImagePlus />
                 {c("إرفاق صورة", "Attach image")}
@@ -272,6 +295,17 @@ export function Composer({
               className="pointer-events-none absolute bottom-0 start-0 h-px w-px opacity-0"
             />
           </div>
+          {!reviewer && (
+            <button
+              type="button"
+              onClick={() => setReviewer(true)}
+              disabled={busy}
+              title={c("إعادة تشغيل المراجع", "Turn the Reviewer back on")}
+              className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-medium text-ink ring-1 ring-primary/30"
+            >
+              {c("المراجع متوقف", "Reviewer off")}
+            </button>
+          )}
           {tools.length < TOOLS.length && (
             <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
               {c(
@@ -311,6 +345,14 @@ export function Composer({
                       <span className="text-xs text-muted-foreground">
                         {lang === "ar" ? MODE_NAMES[m].hintAr : MODE_NAMES[m].hintEn}
                       </span>
+                      {!reviewer && m === "disagreement" && (
+                        <span className="text-xs text-gold-ink">
+                          {c(
+                            "المراجع متوقف: يتوقف فقط عند «معلومات غير كافية»",
+                            "Reviewer off: only pauses at NEI",
+                          )}
+                        </span>
+                      )}
                     </span>
                   </DropdownMenuItem>
                 ))}

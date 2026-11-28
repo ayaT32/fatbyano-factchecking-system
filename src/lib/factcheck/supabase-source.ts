@@ -20,6 +20,7 @@ import type {
   ReviewStatus,
   RunStatus,
   SessionSummary,
+  SettledBy,
   Source,
   StartInput,
   StepSummary,
@@ -149,9 +150,8 @@ async function loadRun(id: string): Promise<FactCheckRun | null> {
     ...(agent ? { agentVerdict: agent } : {}),
     ...(reviewer ? { reviewerVerdict: reviewer } : {}),
     ...(final ? { finalVerdict: final } : {}),
-    ...(str(c["settled_by"])
-      ? { settledBy: c["settled_by"] as "agreement" | "human" | "unresolved" }
-      : {}),
+    ...(str(c["settled_by"]) ? { settledBy: c["settled_by"] as SettledBy } : {}),
+    reviewerEnabled: c["reviewer_enabled"] !== false, // claims from before the switch had it on
     needsHumanReview: Boolean(c["needs_human_review"]),
     sources: ((sources.data ?? []) as Row[]).map(toSource),
     ...(report
@@ -301,6 +301,7 @@ export class SupabaseSource implements FactCheckSource {
         mode: input.mode,
         tools: input.tools,
         model: input.model,
+        reviewer: input.reviewer,
         ...(imagePath ? { imagePath } : {}),
         ...(input.claimDate ? { claimDate: input.claimDate } : {}),
       },

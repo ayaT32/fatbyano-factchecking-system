@@ -57,6 +57,7 @@ export const startFactCheck = createServerFn({ method: "POST" })
             "The claim date can't be in the future.",
           )
           .optional(),
+        reviewer: z.boolean().default(true),
       })
       .refine((v) => v.text.trim() || v.imagePath, "A claim needs text or an image.")
       .parse(d),
@@ -76,6 +77,7 @@ export const startFactCheck = createServerFn({ method: "POST" })
         mode: data.mode,
         tools: data.tools,
         model: data.model,
+        reviewer_enabled: data.reviewer,
         status: "queued",
       })
       .select("id")
@@ -89,6 +91,7 @@ export const startFactCheck = createServerFn({ method: "POST" })
         tools: data.tools.filter((t) => ["manipulation", "metadata", "geolocation"].includes(t)),
         model: data.model,
         ...(data.claimDate ? { date: data.claimDate } : {}),
+        reviewer: data.reviewer,
       });
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
